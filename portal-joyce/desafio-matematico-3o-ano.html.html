@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🎯 Super Desafio Matemático - 3º Ano</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', Comic Sans, Arial, sans-serif;
+            background: linear-gradient(135deg, #FFD600 0%, #FF9800 50%, #4ECDC4 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fffde7;
+            border-radius: 21px;
+            box-shadow: 0 10px 40px #ffe08299;
+            padding: 40px 24px 24px 24px;
+        }
+        .titulo-principal {
+            font-size: 2.8rem;
+            color: #ff9100;
+            text-shadow: 2px 2px 9px #fffbe7;
+            margin-bottom: 18px;
+            font-family: 'Comic Sans MS', Comic Sans, Arial, sans-serif;
+        }
+        .campo-nome {
+            margin: 40px 0 36px 0;
+            text-align: center;
+        }
+        .campo-nome input {
+            font-size: 20px;
+            padding: 14px;
+            border-radius: 11px;
+            border: 2px solid #FFD600;
+            width: 340px;
+            max-width: 100%;
+            box-shadow: 0 2px 8px #FFD60044;
+        }
+        .btn-iniciar,
+        .btn-voltar,
+        .btn-jogo,
+        .btn-reiniciar,
+        .btn-menu-jogo {
+            background: linear-gradient(135deg, #FFD600, #FF9800);
+            color: white;
+            border: none;
+            border-radius: 13px;
+            font-size: 1.25rem;
+            padding: 15px 30px;
+            margin: 14px 0;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 14px #ffe08266;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .btn-iniciar:hover,
+        .btn-jogo:hover,
+        .btn-reiniciar:hover,
+        .btn-voltar:hover,
+        .btn-menu-jogo:hover {
+            background: linear-gradient(135deg, #FF9800, #FFD600);
+            transform: scale(1.07);
+        }
+        .tela-inicial {
+            margin-top: 12px;
+            text-align: center;
+        }
+        .tela {
+            display: none;
+        }
+        .tela.ativa {
+            display: block;
+        }
+        .grade-niveis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 22px;
+            margin: 30px 0 10px 0;
+        }
+        .card-nivel {
+            background: linear-gradient(135deg,#FFF9C4,#B3E5FC);
+            border: 3px solid #FFD600;
+            border-radius: 18px;
+            padding: 26px 10px 21px 10px;
+            box-shadow: 0 8px 32px #ffd60044;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1.2em;
+            color: #252525;
+            font-family:'Comic Sans MS', Comic Sans, Arial, sans-serif;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-nivel:hover {
+            box-shadow: 0 8px 32px #FFD60088;
+            transform: scale(1.09);
+        }
+        .tela-jogo, .tela-niveis, .tela-final {
+            margin-top: 32px;
+            background: #fffde7;
+            border-radius: 21px;
+        }
+        .header-jogo {
+            font-size: 1.18em;
+            background: #ffc10755;
+            border-radius: 15px;
+            padding: 18px 18px !important;
+            margin-bottom: 18px;
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pontuacao { font-size: 1.17em; }
+        .area-problema {
+            padding: 18px 14px;
+            background: #FAFAFA;
+            border: 3px dashed #FFD60099;
+            border-radius: 17px;
+            margin-bottom: 12px;
+            box-shadow: 0 0 22px #ffe08255;
+        }
+        .questao-problema {
+            font-size: 1.26rem;
+            color: #222;
+            padding: 14px 0 6px 0;
+        }
+        .input-resposta {
+            font-size: 1.35rem;
+            text-align: center;
+            border: 3px solid #ffd600;
+            border-radius: 11px;
+            width: 110px;
+            padding: 7px;
+            margin: 5px 0 10px 0;
+            box-shadow: 0 2px 7px #ffd60077;
+        }
+        .feedback-area {
+            min-height: 45px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 1.22em;
+            font-family:'Comic Sans MS', Comic Sans, Arial, sans-serif;
+        }
+        @media (max-width: 700px) {
+            .container {padding: 10px;}
+            .grade-niveis {grid-template-columns: 1fr;}
+            .titulo-principal {font-size:2rem;}
+            .header-jogo {flex-direction:column;font-size:1em;}
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="tela tela-inicial ativa" id="telaInicial">
+        <h1 class="titulo-principal">🎯 SUPER DESAFIO MATEMÁTICO<br>40 QUESTÕES!</h1>
+        <div style="margin-bottom:24px; font-size:1.18em;">🎲 5 perguntas × 8 níveis = 40 problemas únicos!</div>
+        <div class="campo-nome">
+            <input type="text" id="nomeJogador" placeholder="Digite seu nome para começar" maxlength="20">
+        </div>
+        <button class="btn-iniciar" onclick="iniciarJogo()">🚀 Vamos Começar!</button>
+    </div>
+    <div class="tela tela-niveis" id="telaNiveis">
+        <button class="btn-voltar" onclick="voltarInicial()" style="position:absolute;left:22px;">←</button>
+        <h2 style="text-align:center;margin-bottom:18px;">👋 Olá <span id="nomeNaTela">Jogador</span>! Escolha seu desafio:</h2>
+        <div class="grade-niveis" id="gradeNiveis"></div>
+    </div>
+    <div class="tela tela-jogo" id="telaJogo">
+        <div class="header-jogo">
+            <div>👤 <span id="nomeJogador2">Jogador</span></div>
+            <div id="infoNivel">Nível 1</div>
+            <div class="pontuacao">🏆 <span id="pontuacaoAtual">0</span> pontos</div>
+        </div>
+        <div class="area-problema">
+            <h3 id="tituloProblema"></h3>
+            <div class="questao-problema" id="textoProblema"></div>
+            <input type="number" class="input-resposta" id="campoResposta" placeholder="?">
+        </div>
+        <div class="feedback-area" id="feedbackArea"></div>
+        <button class="btn-jogo" onclick="verificarResposta()" id="btnVerificar">✅ Verificar</button>
+        <button class="btn-jogo" onclick="proximoProblema()" id="btnProximo" style="display:none;">➡️ Próxima</button>
+        <button class="btn-menu-jogo" onclick="voltarMenu()" id="btnMenuJogo" style="margin-top:14px;">🏠 Voltar ao Menu</button>
+    </div>
+    <div class="tela tela-final" id="telaFinal">
+        <h1 class="titulo-principal">🎉 PARABÉNS!<br>Você concluiu o Super Desafio Matemático!</h1>
+        <div style="margin:20px 0 24px;">
+            <strong>🏆 <span id="pontuacaoFinal">0</span> pontos conquistados!</strong>
+        </div>
+        <button class="btn-reiniciar" onclick="reiniciarJogo()">🔄 Jogar Novamente</button>
+        <button class="btn-menu-jogo" onclick="voltarMenu()" style="margin-left:16px;">🏠 Voltar ao Menu</button>
+    </div>
+</div>
+<script>
+const NIVEIS = [
+    {nome:"Adição Iniciante"},
+    {nome:"Subtração Iniciante"},
+    {nome:"Multiplicação Iniciante"},
+    {nome:"Divisão Iniciante"},
+    {nome:"Adição Intermediária"},
+    {nome:"Subtração Intermediária"},
+    {nome:"Multiplicação Intermediária"},
+    {nome:"Divisão Intermediária"}
+];
+
+const PROBLEMAS = [
+    // Adição Iniciante
+    {nivel:0, titulo:"🐶 Adição Simples", problema:"Quanto é 2 + 5?", resposta:7},
+    {nivel:0, titulo:"🍎 Adição Simples", problema:"Quanto é 1 + 9?", resposta:10},
+    {nivel:0, titulo:"🚗 Adição Simples", problema:"Quanto é 4 + 6?", resposta:10},
+    {nivel:0, titulo:"🎲 Adição Simples", problema:"Quanto é 3 + 7?", resposta:10},
+    {nivel:0, titulo:"🎈 Adição Simples", problema:"Quanto é 5 + 5?", resposta:10},
+    // Subtração Iniciante
+    {nivel:1, titulo:"🦄 Subtração Simples", problema:"Quanto é 9 - 2?", resposta:7},
+    {nivel:1, titulo:"🦖 Subtração Simples", problema:"Quanto é 10 - 4?", resposta:6},
+    {nivel:1, titulo:"🍭 Subtração Simples", problema:"Quanto é 8 - 3?", resposta:5},
+    {nivel:1, titulo:"🎀 Subtração Simples", problema:"Quanto é 7 - 5?", resposta:2},
+    {nivel:1, titulo:"👑 Subtração Simples", problema:"Quanto é 10 - 9?", resposta:1},
+    // Multiplicação Iniciante
+    {nivel:2, titulo:"🧩 Tabuada Fácil", problema:"Quanto é 2 x 3?", resposta:6},
+    {nivel:2, titulo:"🚀 Tabuada Fácil", problema:"Quanto é 1 x 6?", resposta:6},
+    {nivel:2, titulo:"🦋 Tabuada Fácil", problema:"Quanto é 4 x 2?", resposta:8},
+    {nivel:2, titulo:"⭐ Tabuada Fácil", problema:"Quanto é 3 x 5?", resposta:15},
+    {nivel:2, titulo:"⚽ Tabuada Fácil", problema:"Quanto é 5 x 2?", resposta:10},
+    // Divisão Iniciante
+    {nivel:3, titulo:"🐰 Divisão Fácil", problema:"Quanto é 6 ÷ 2?", resposta:3},
+    {nivel:3, titulo:"🌟 Divisão Fácil", problema:"Quanto é 8 ÷ 4?", resposta:2},
+    {nivel:3, titulo:"🐱 Divisão Fácil", problema:"Quanto é 10 ÷ 2?", resposta:5},
+    {nivel:3, titulo:"🌈 Divisão Fácil", problema:"Quanto é 15 ÷ 5?", resposta:3},
+    {nivel:3, titulo:"🎸 Divisão Fácil", problema:"Quanto é 9 ÷ 3?", resposta:3},
+    // Adição Intermediária
+    {nivel:4, titulo:"🐻 Adição Intermediária", problema:"Quanto é 17 + 5?", resposta:22},
+    {nivel:4, titulo:"🦊 Adição Intermediária", problema:"Quanto é 12 + 15?", resposta:27},
+    {nivel:4, titulo:"🦄 Adição Intermediária", problema:"Quanto é 24 + 16?", resposta:40},
+    {nivel:4, titulo:"🐵 Adição Intermediária", problema:"Quanto é 28 + 13?", resposta:41},
+    {nivel:4, titulo:"🦁 Adição Intermediária", problema:"Quanto é 21 + 19?", resposta:40},
+    // Subtração Intermediária
+    {nivel:5, titulo:"🐸 Subtração Intermediária", problema:"Quanto é 23 - 7?", resposta:16},
+    {nivel:5, titulo:"🐢 Subtração Intermediária", problema:"Quanto é 30 - 14?", resposta:16},
+    {nivel:5, titulo:"🐼 Subtração Intermediária", problema:"Quanto é 27 - 13?", resposta:14},
+    {nivel:5, titulo:"🐮 Subtração Intermediária", problema:"Quanto é 40 - 25?", resposta:15},
+    {nivel:5, titulo:"🦓 Subtração Intermediária", problema:"Quanto é 34 - 8?", resposta:26},
+    // Multiplicação Intermediária
+    {nivel:6, titulo:"🐥 Multiplicação Intermediária", problema:"Quanto é 6 x 4?", resposta:24},
+    {nivel:6, titulo:"🐨 Multiplicação Intermediária", problema:"Quanto é 7 x 3?", resposta:21},
+    {nivel:6, titulo:"🦅 Multiplicação Intermediária", problema:"Quanto é 5 x 9?", resposta:45},
+    {nivel:6, titulo:"🦉 Multiplicação Intermediária", problema:"Quanto é 8 x 2?", resposta:16},
+    {nivel:6, titulo:"🦜 Multiplicação Intermediária", problema:"Quanto é 10 x 6?", resposta:60},
+    // Divisão Intermediária
+    {nivel:7, titulo:"🦄 Divisão Intermediária", problema:"Quanto é 48 ÷ 6?", resposta:8},
+    {nivel:7, titulo:"🦢 Divisão Intermediária", problema:"Quanto é 56 ÷ 7?", resposta:8},
+    {nivel:7, titulo:"🐧 Divisão Intermediária", problema:"Quanto é 72 ÷ 9?", resposta:8},
+    {nivel:7, titulo:"🦚 Divisão Intermediária", problema:"Quanto é 54 ÷ 6?", resposta:9},
+    {nivel:7, titulo:"🦆 Divisão Intermediária", problema:"Quanto é 63 ÷ 7?", resposta:9}
+];
+
+let jogador = { nome: '', nivel: 0, pergunta: 0, pontos: 0 };
+
+function mostrarTela(id) {
+    document.querySelectorAll('.tela').forEach(tela => tela.classList.remove('ativa'));
+    document.getElementById(id).classList.add('ativa');
+}
+
+function iniciarJogo() {
+    const nome = document.getElementById('nomeJogador').value.trim();
+    if (!nome) { alert('Digite seu nome!'); return; }
+    jogador.nome = nome;
+    document.getElementById('nomeNaTela').textContent = nome;
+    document.getElementById('nomeJogador2').textContent = nome;
+    jogador.pontos = 0;
+    jogador.nivel = null;
+    jogador.pergunta = null;
+    montarNiveis();
+    mostrarTela('telaNiveis');
+}
+
+function montarNiveis() {
+    const div = document.getElementById('gradeNiveis');
+    div.innerHTML = '';
+    NIVEIS.forEach((nivel, i) => {
+        const card = document.createElement('div');
+        card.className = 'card-nivel';
+        card.innerHTML = `Nível ${i+1}: <br> <span style="font-size:1.3em;">${nivel.nome}</span>`;
+        card.onclick = () => iniciarNivel(i);
+        div.appendChild(card);
+    });
+}
+
+function iniciarNivel(nivel) {
+    jogador.nivel = nivel;
+    jogador.pergunta = 0;
+    jogador.pontos = 0;
+    carregarPergunta();
+    mostrarTela('telaJogo');
+    document.getElementById('infoNivel').textContent = `Nível ${nivel+1}: ${NIVEIS[nivel].nome}`;
+    document.getElementById('pontuacaoAtual').textContent = jogador.pontos;
+}
+
+function carregarPergunta() {
+    const perguntas = PROBLEMAS.filter(p => p.nivel === jogador.nivel);
+    if (jogador.pergunta >= perguntas.length) {
+        mostrarTela('telaFinal');
+        document.getElementById('pontuacaoFinal').textContent = jogador.pontos;
+        return;
+    }
+    const atual = perguntas[jogador.pergunta];
+    document.getElementById('tituloProblema').textContent = atual.titulo;
+    document.getElementById('textoProblema').textContent = atual.problema;
+    document.getElementById('campoResposta').value = '';
+    document.getElementById('feedbackArea').textContent = '';
+    document.getElementById('btnVerificar').style.display = '';
+    document.getElementById('btnProximo').style.display = 'none';
+}
+
+function verificarResposta() {
+    const perguntas = PROBLEMAS.filter(p => p.nivel === jogador.nivel);
+    const atual = perguntas[jogador.pergunta];
+    const resposta = document.getElementById('campoResposta').value.trim();
+    if (resposta === '') {
+        alert('Digite a resposta!');
+        return;
+    }
+    if (parseInt(resposta) === atual.resposta) {
+        document.getElementById('feedbackArea').textContent = '🎉 Correto! Muito bem!';
+        jogador.pontos += 1;
+        document.getElementById('pontuacaoAtual').textContent = jogador.pontos;
+    } else {
+        document.getElementById('feedbackArea').textContent = '😕 Resposta correta: ' + atual.resposta;
+    }
+    document.getElementById('btnVerificar').style.display = 'none';
+    document.getElementById('btnProximo').style.display = '';
+}
+
+function proximoProblema() {
+    jogador.pergunta += 1;
+    carregarPergunta();
+}
+
+function voltarMenu() {
+    montarNiveis();
+    mostrarTela('telaNiveis');
+}
+
+function voltarInicial() {
+    mostrarTela('telaInicial');
+}
+
+function reiniciarJogo() {
+    location.reload();
+}
+</script>
+</body>
+</html>

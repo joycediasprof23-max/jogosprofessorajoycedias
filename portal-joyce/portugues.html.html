@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🎮 Super Desafio Português - 3º Ano</title>
+<style>
+body { font-family:'Comic Sans MS',cursive,Arial,sans-serif; background:linear-gradient(135deg,#FF6B6B 0%,#4ECDC4 100%);min-height:100vh; margin:0; }
+.container{max-width:900px;margin:0 auto;background:#fff;border-radius:16px;padding:44px 24px 24px;box-shadow:0 10px 40px rgba(0,20,100,0.15);}
+.tela{display:none;}
+.tela.ativa{display:block;}
+.titulo-principal{font-size:2.5rem;color:#43A047;text-align:center;margin-bottom:18px;}
+.campo-nome{text-align:center;margin:36px 0 28px;}
+.campo-nome input{font-size:1.33rem;padding:14px;border-radius:8px;border:2px solid #2196F3;width:320px;max-width:90%;}
+.btn-iniciar,.btn-voltar,.btn-habilidade,.btn-reiniciar{background:linear-gradient(135deg,#FF6B6B,#4ECDC4);color:white;border:none;border-radius:10px;font-size:1.15rem;padding:16px 36px;margin:12px auto;cursor:pointer;font-weight:bold;box-shadow:0 6px 14px rgba(0,0,0,.07);display:block;max-width:280px;transition:background 0.3s,transform 0.2s;}
+.btn-iniciar:hover,.btn-habilidade:hover,.btn-reiniciar:hover,.btn-voltar:hover{background:linear-gradient(135deg,#4ECDC4,#FF6B6B);transform:translateY(-4px);}
+.grade-habilidades{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:19px 13px;margin:34px 0 8px;}
+.card-habilidade{background:linear-gradient(135deg,#e3f9e1,#f9e8e0 65%);border:2.5px solid #2196F3;border-radius:14px;padding:28px 14px 22px;text-align:center;font-size:1.18em;color:#252525;cursor:pointer;transition:transform 0.17s,box-shadow 0.17s;}
+.card-habilidade:hover{box-shadow:0 8px 24px #81D4FAaa;transform:translateY(-5px) scale(1.04);}
+.header-jogo{margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;background:#e3f2fd;border-radius:13px;padding:15px;}
+.area-questao{background:#f3f9fc;padding:22px 16px;border-radius:14px;margin-bottom:12px;}
+.titulo-questao{font-size:1.21rem;color:#1976d2;}
+.pergunta{font-size:1.09rem;color:#222;padding:10px 0 2px;}
+.opcoes-resposta{margin:15px 0;display:grid;gap:10px;}
+.opcao{background: white; border:2px solid #90caf9; border-radius:10px; padding:13px 10px; font-size:1.03rem; color:#1976d2; cursor:pointer;transition:all 0.18s;}
+.opcao:hover{border-color:#43A047;background:#e0f2f1;}
+.opcao.selecionada{background:#2196F3;color:white;border-color:#1976d2;}
+.opcao.correta{background:#4caf50;color:white;border-color:#388e3c;}
+.opcao.incorreta{background:#FF5252;color:white;border-color:#C62828;}
+.area-botoes,.feedback{display:flex;justify-content:center;align-items:center;gap:14px;}
+.feedback{min-height:33px;margin-bottom:7px;padding:10px 17px;border-radius:10px;font-size:1rem;font-weight:bold;}
+.feedback.correto{background:#4caf50;color:white;}
+.feedback.incorreto{background:#FF5252;color:white;}
+.btn-responder{background:#43A047;}
+.btn-proximo{background:#4caf50;}
+.btn-menu{background:#1898af;}
+.btn-reiniciar{background:linear-gradient(90deg,#F44336 60%,#E91E63 100%);}
+.tela-final{margin-top:28px;text-align:center;}
+@media (max-width:670px){.container{padding:7px;}}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="tela tela-inicial ativa" id="telaInicial">
+        <h1 class="titulo-principal"><span style="font-size:2.2rem;">🎮</span> Super Desafio Português - 3º Ano</h1>
+        <div class="campo-nome">
+            <input type="text" id="nomeJogador" placeholder="Digite seu nome para começar" maxlength="30"/>
+        </div>
+        <button class="btn-iniciar" onclick="iniciarJogo()">🚀 Iniciar</button>
+    </div>
+    <div class="tela tela-habilidades" id="telaHabilidades">
+        <button class="btn-voltar" onclick="voltarInicio()" style="position:absolute;left:22px;">← Voltar</button>
+        <h2 class="titulo-principal" style="color:#2196F3;font-size:2rem;padding-top:10px;">
+            👋 Olá <span id="nomeNaTela">Jogador</span>! Escolha uma habilidade:
+        </h2>
+        <div class="grade-habilidades" id="gradeHabilidades"></div>
+    </div>
+    <div class="tela tela-jogo" id="telaJogo">
+        <div class="header-jogo">
+            <div>👤 <span id="nomeJogadorJogo">Jogador</span></div>
+            <div id="infoHabilidade">Habilidade 1</div>
+            <div id="contadorQuestao">Questão 1 de 10</div>
+            <div>🏆 <span id="pontuacaoAtual">0</span> pontos</div>
+        </div>
+        <div class="area-questao">
+            <h2 class="titulo-questao" id="tituloQuestao"></h2>
+            <p class="pergunta" id="textoPergunta"></p>
+            <div class="opcoes-resposta" id="opcoesResposta"></div>
+        </div>
+        <div class="feedback oculto" id="feedbackArea"></div>
+        <div class="area-botoes">
+            <button class="btn btn-responder" onclick="verificarResposta()" id="btnResponder">✅ Responder</button>
+            <button class="btn btn-proximo oculto" onclick="proximaQuestao()" id="btnProximo">➡️ Próxima Questão</button>
+            <button class="btn btn-menu oculto" onclick="voltarMenu()" id="btnMenu">📚 Voltar ao Menu</button>
+        </div>
+    </div>
+    <div class="tela tela-final" id="telaFinal">
+        <h1 class="titulo-principal">🎉 PARABÉNS! 🎉</h1>
+        <div style="margin:15px 0;font-size:1.11rem;">
+            Você completou esta habilidade! <br>
+            <strong>🏆 <span id="pontuacaoFinal"></span></strong> pontos.
+        </div>
+        <button class="btn-reiniciar" onclick="reiniciarJogo()">🔄 Jogar Novamente</button>
+        <button class="btn btn-menu" onclick="voltarMenu()" style="margin-left:10px;margin-top:10px;">📚 Voltar ao Menu</button>
+    </div>
+<script>
+const HABILIDADES = [
+    "Alfabeto e Letras", "Sílabas e Sons", "Ortografia Básica", "Classes de Palavras", 
+    "Interpretação", "Pontuação", "Sinônimos e Antônimos", "Produção Textual"
+];
+
+const QUESTOES = [
+{id:1, categoria:"alfabeto", titulo:"🔤 Ordem das Palavras", pergunta:"Qual palavra vem PRIMEIRO na ordem alfabética?", opcoes:["BOLA","CASA","DADO","GATO"], resposta_correta:"BOLA"},
+{id:2, categoria:"alfabeto", titulo:"🔡 Letras", pergunta:"Quantas letras tem a palavra elefante?", opcoes:["7 letras","8 letras","9 letras","10 letras"], resposta_correta:"8 letras"},
+{id:3, categoria:"alfabeto", titulo:"🔠 Maiúsculas e minúsculas", pergunta:"Como fica a palavra caderno toda em maiúsculas?", opcoes:["CADERNO","caderno","Caderno","CADerno"], resposta_correta:"CADERNO"},
+{id:4, categoria:"alfabeto", titulo:"🔠 Letra inicial", pergunta:"Com que letra começa a palavra girafa?", opcoes:["G","J","R","F"], resposta_correta:"G"},
+{id:5, categoria:"alfabeto", titulo:"🔠 Vogais", pergunta:"Qual dessas é uma vogal?", opcoes:["B","E","G","Y"], resposta_correta:"E"},
+{id:6, categoria:"alfabeto", titulo:"🔤 Ordem", pergunta:"Qual palavra vem DEPOIS de bola no alfabeto?", opcoes:["CASA","DADO","ARCO","GATO"], resposta_correta:"CASA"},
+{id:7, categoria:"alfabeto", titulo:"🔠 Final letra", pergunta:"Qual letra termina a palavra flor?", opcoes:["L","R","O","F"], resposta_correta:"R"},
+{id:8, categoria:"alfabeto", titulo:"🔤 Quantas letras", pergunta:"Quantas letras tem a palavra banana?", opcoes:["4","5","6","7"], resposta_correta:"6"},
+{id:9, categoria:"alfabeto", titulo:"🔡 Letra escondida", pergunta:"Qual letra está faltando? B_NANA", opcoes:["A","R","N","E"], resposta_correta:"A"},
+{id:10, categoria:"alfabeto", titulo:"🔠 Primeira letra", pergunta:"Qual a primeira letra da palavra quadro?", opcoes:["Q","O","C","U"], resposta_correta:"Q"},
+{id:11, categoria:"silabas", titulo:"✂️ Separação silábica", pergunta:"Separe em sílabas: sapato", opcoes:["sa-pa-to","sap-ato","sapa-to","s-apato"], resposta_correta:"sa-pa-to"},
+{id:12, categoria:"silabas", titulo:"✂️ Som inicial", pergunta:"Qual som inicial tem a palavra bicicleta?", opcoes:["bi","ba","be","bo"], resposta_correta:"bi"},
+{id:13, categoria:"silabas", titulo:"✂️ Contando sílabas", pergunta:"Quantas sílabas tem mesa?", opcoes:["1","2","3","4"], resposta_correta:"2"},
+{id:14, categoria:"silabas", titulo:"✂️ Palavra com sílaba LA", pergunta:"Qual delas tem a sílaba LA?", opcoes:["LATA","MESA","SAPATO","LOUSA"], resposta_correta:"LATA"},
+{id:15, categoria:"silabas", titulo:"✂️ Som final", pergunta:"Qual sílaba final de pipoca?", opcoes:["ca","co","po","pi"], resposta_correta:"ca"},
+{id:16, categoria:"silabas", titulo:"✂️ Rimas", pergunta:"Qual palavra rima com bola?", opcoes:["cama","cola","mesa","batata"], resposta_correta:"cola"},
+{id:17, categoria:"silabas", titulo:"✂️ Quantas sílabas", pergunta:"Quantas sílabas tem caderno?", opcoes:["2","3","4","5"], resposta_correta:"3"},
+{id:18, categoria:"silabas", titulo:"✂️ Sílabas invertidas", pergunta:"Qual destas tem sílabas invertidas? (Ex: RO-SA para SA-RO)", opcoes:["SALMO","SORO","LABO","SORSA"], resposta_correta:"BOLA"},
+{id:19, categoria:"silabas", titulo:"✂️ Palavras com MA", pergunta:"Qual dessas palavras contém a sílaba MI?", opcoes:["CAMISA","QUILO","TAPA","LOUSA"], resposta_correta:"CAMISA"},
+{id:20, categoria:"silabas", titulo:"✂️ Última sílaba", pergunta:"Última sílaba de menina?", opcoes:["ni","na","me","ne"], resposta_correta:"na"},
+{id:21, categoria:"ortografia", titulo:"📝 Troca letras", pergunta:"Qual a escrita correta?", opcoes:["ajunda","ajuda","ajoda","ajuda"], resposta_correta:"ajuda"},
+{id:22, categoria:"ortografia", titulo:"📝 Som das letras", pergunta:"Qual dessas é escrita corretamente?", opcoes:["excola","escoola","escola","iscoola"], resposta_correta:"escola"},
+{id:23, categoria:"ortografia", titulo:"📝 Faltou letra", pergunta:"Complete a palavra: _eia", opcoes:["M","B","P","C"], resposta_correta:"M"},
+{id:24, categoria:"ortografia", titulo:"📝 Som semelhante", pergunta:"Qual das opções tem o mesmo som de carro?", opcoes:["barro","gato","cama","pato"], resposta_correta:"barro"},
+{id:25, categoria:"ortografia", titulo:"📝 Escreva certo", pergunta:"Escolha a palavra escrita corretamente", opcoes:["sapeço","sapato","sapoto","sapate"], resposta_correta:"sapato"},
+{id:26, categoria:"ortografia", titulo:"📝 Uso de LH", pergunta:"Qual dessas tem LH?", opcoes:["trabalho","bolha","bilhete","telefone"], resposta_correta:"bilhete"},
+{id:27, categoria:"ortografia", titulo:"📝 Palavras com CH", pergunta:"Qual delas tem CH?", opcoes:["abacaxi","cachorro","bambu","batata"], resposta_correta:"cachorro"},
+{id:28, categoria:"ortografia", titulo:"📝 Palavras com QU", pergunta:"Qual destas tem QU?", opcoes:["quadro","carro","mesa","gato"], resposta_correta:"quadro"},
+{id:29, categoria:"ortografia", titulo:"📝 Som de SS", pergunta:"Qual dessas tem SS?", opcoes:["passar","vermelho","escada","melancia"], resposta_correta:"passar"},
+{id:30, categoria:"ortografia", titulo:"📝 Letra trocada", pergunta:"Qual está SEM erro?", opcoes:["cabeca","cabeça","cabeca","cabesa"], resposta_correta:"cabeça"},
+{id:31, categoria:"classes", titulo:"🏷️ Artigo", pergunta:"Qual destas é um artigo?", opcoes:["O","Cachorro","Bonito","Rápido"], resposta_correta:"O"},
+{id:32, categoria:"classes", titulo:"🏷️ Substantivo", pergunta:"Escolha o substantivo", opcoes:["mesa","bonito","corre","rápido"], resposta_correta:"mesa"},
+{id:33, categoria:"classes", titulo:"🏷️ Adjetivo", pergunta:"Qual destas é um adjetivo?", opcoes:["feliz","copo","menino","banana"], resposta_correta:"feliz"},
+{id:34, categoria:"classes", titulo:"🏷️ Verbo", pergunta:"Qual palavra é um verbo?", opcoes:["comer","bola","triste","azul"], resposta_correta:"comer"},
+{id:35, categoria:"classes", titulo:"🏷️ Substantivo comum", pergunta:"Qual dessas é um substantivo comum?", opcoes:["gato","Gato","gato","GAto"], resposta_correta:"gato"},
+{id:36, categoria:"classes", titulo:"🏷️ Substantivo próprio", pergunta:"Qual é o substantivo próprio?", opcoes:["Brasil","bola","feliz","corre"], resposta_correta:"Brasil"},
+{id:37, categoria:"classes", titulo:"🏷️ Adjetivo", pergunta:"Qual destas é um adjetivo?", opcoes:["verde","mesa","pato","talher"], resposta_correta:"verde"},
+{id:38, categoria:"classes", titulo:"🏷️ Verbo", pergunta:"Qual destas é um verbo?", opcoes:["correr","carro","amarelo","caneca"], resposta_correta:"correr"},
+{id:39, categoria:"classes", titulo:"🏷️ Artigo feminino", pergunta:"Qual destas é artigo feminino?", opcoes:["A","O","UM","POR"], resposta_correta:"A"},
+{id:40, categoria:"classes", titulo:"🏷️ Substantivo coletivo de pássaros", pergunta:"Como se chama grupo de pássaros?", opcoes:["bando","rebanho","manada","cardume"], resposta_correta:"bando"},
+{id:41, categoria:"interpretacao", titulo:"📖 Texto curto", pergunta:"O sol apareceu no céu e todos foram brincar lá fora. O que motivou as crianças a brincar fora?", opcoes:["Chuva","Sol","Vento","Neve"], resposta_correta:"Sol"},
+{id:42, categoria:"interpretacao", titulo:"📖 Personagem principal", pergunta:"No texto: Lucas correu para o parque. Quem é o personagem principal?", opcoes:["Lucas","Parque","Menino","Cachorro"], resposta_correta:"Lucas"},
+{id:43, categoria:"interpretacao", titulo:"📖 Local", pergunta:"No texto: Ana foi à escola feliz. Onde Ana foi?", opcoes:["Praça","Escola","Casa","Loja"], resposta_correta:"Escola"},
+{id:44, categoria:"interpretacao", titulo:"📖 Ação", pergunta:"No texto: Maria desenhou uma flor. O que Maria fez?", opcoes:["Cantou","Desenhou","Pulou","Dançou"], resposta_correta:"Desenhou"},
+{id:45, categoria:"interpretacao", titulo:"📖 Sentimento", pergunta:"No texto: Pedro estava contente. Como Pedro estava?", opcoes:["Triste","Bravo","Contente","Com sono"], resposta_correta:"Contente"},
+{id:46, categoria:"interpretacao", titulo:"📖 O que aconteceu?", pergunta:"No texto: A bola caiu no jardim. Onde caiu a bola?", opcoes:["No telhado","No jardim","Na rua","Na escola"], resposta_correta:"No jardim"},
+{id:47, categoria:"interpretacao", titulo:"📖 Final", pergunta:"No texto: Joana correu, chegou em casa e dormiu. O que Joana fez depois de chegar?", opcoes:["Dormiu","Estudou","Brincou","Comeu"], resposta_correta:"Dormiu"},
+{id:48, categoria:"interpretacao", titulo:"📖 Escolha", pergunta:"No texto: Henrique leu um livro. O que Henrique leu?", opcoes:["Jornal","Livro","Revista","Carta"], resposta_correta:"Livro"},
+{id:49, categoria:"interpretacao", titulo:"📖 Motivo", pergunta:"No texto: Ela usou guarda-chuva, pois estava chovendo. Por que usou guarda-chuva?", opcoes:["Sol","Chuva","Vento","Neve"], resposta_correta:"Chuva"},
+{id:50, categoria:"interpretacao", titulo:"📖 Informação", pergunta:"No texto: O cachorro pulou o muro alto. O que o cachorro fez?", opcoes:["Pulou o muro","Desenhou o muro","Subiu no telhado","Entrou na casa"], resposta_correta:"Pulou o muro"},
+{id:51, categoria:"pontuacao", titulo:"❓ Pontuação final", pergunta:"Qual sinal de pontuação termina a frase: Hoje está quente __", opcoes:["?","!",";",","], resposta_correta:"!"},
+{id:52, categoria:"pontuacao", titulo:"❓ Pergunta", pergunta:"Qual sinal usamos para perguntas?", opcoes:[".",",","?","!"], resposta_correta:"?"},
+{id:53, categoria:"pontuacao", titulo:"❓ Vírgula", pergunta:"Indique a frase com vírgula:", opcoes:["João, Maria e Lucas.","João Maria Lucas.","João Maria Lucas!","João Maria Lucas?"], resposta_correta:"João, Maria e Lucas."},
+{id:54, categoria:"pontuacao", titulo:"❓ Pontuação", pergunta:"Onde está o ponto final?", opcoes:["Olá.","Olá","Olá!","Olá,"], resposta_correta:"Olá."},
+{id:55, categoria:"pontuacao", titulo:"❓ Exclamação", pergunta:"Assinale a frase com exclamação:", opcoes:["Bom dia!","Bom dia.","Bom dia?","Bom dia,"], resposta_correta:"Bom dia!"},
+{id:56, categoria:"pontuacao", titulo:"❓ Dois-pontos", pergunta:"Qual frase usa dois-pontos?", opcoes:["Ele disse: Olá!","Ele disse Olá!","Ele disse Olá.","Ele disse Olá?"], resposta_correta:"Ele disse: Olá!"},
+{id:57, categoria:"pontuacao", titulo:"❓ Aspas", pergunta:"Qual frase usa aspas?", opcoes:["Ela disse: 'Oi!'","Ela disse Oi!","Ela disse, Oi!","Ela disse Oi?"], resposta_correta:"Ela disse: 'Oi!'"},
+{id:58, categoria:"pontuacao", titulo:"❓ Vírgula separa", pergunta:"Em qual opção há vírgula separando palavras?", opcoes:["Maçã, pera e uva.","Maçã pera e uva.","Maçã pera uva.","Maçã pera e uva"], resposta_correta:"Maçã, pera e uva."},
+{id:59, categoria:"pontuacao", titulo:"❓ Pontuação no final", pergunta:"Complete: Vamos brincar___", opcoes:[".","!","?",";"], resposta_correta:"!"},
+{id:60, categoria:"pontuacao", titulo:"❓ Sinal correto", pergunta:"Qual frase mostra surpresa?", opcoes:["Que legal!","Que legal.","Que legal?","Que legal,"], resposta_correta:"Que legal!"},
+{id:61, categoria:"sinonimos", titulo:"😊 Sinônimo de feliz", pergunta:"Escolha o sinônimo de FELIZ:", opcoes:["Alegre","Triste","Bravo","Cansado"], resposta_correta:"Alegre"},
+{id:62, categoria:"sinonimos", titulo:"😊 Antônimo de grande", pergunta:"Qual é antônimo de GRANDE?", opcoes:["Pequeno","Médio","Alto","Largo"], resposta_correta:"Pequeno"},
+{id:63, categoria:"sinonimos", titulo:"😊 Sinônimo de rápido", pergunta:"Escolha o sinônimo de RÁPIDO:", opcoes:["Veloz","Devagar","Lento","Parado"], resposta_correta:"Veloz"},
+{id:64, categoria:"sinonimos", titulo:"😊 Antônimo de bonito", pergunta:"Qual antônimo de BONITO?", opcoes:["Feio","Alegre","Alto","Baixo"], resposta_correta:"Feio"},
+{id:65, categoria:"sinonimos", titulo:"😊 Sinônimo de criança", pergunta:"Escolha o sinônimo de CRIANÇA:", opcoes:["Menino","Menina","Pessoa","Adulto"], resposta_correta:"Menino"},
+{id:66, categoria:"sinonimos", titulo:"😊 Antônimo de quente", pergunta:"Qual antônimo de QUENTE?", opcoes:["Frio","Morno","Gelado","Seco"], resposta_correta:"Frio"},
+{id:67, categoria:"sinonimos", titulo:"😊 Sinônimo de pequeno", pergunta:"Escolha o sinônimo de PEQUENO:", opcoes:["Mínimo","Grande","Longo","Rápido"], resposta_correta:"Mínimo"},
+{id:68, categoria:"sinonimos", titulo:"😊 Antônimo de claro", pergunta:"Qual antônimo de CLARO?", opcoes:["Escuro","Fraco","Alto","Baixo"], resposta_correta:"Escuro"},
+{id:69, categoria:"sinonimos", titulo:"😊 Sinônimo de cansado", pergunta:"Escolha o sinônimo de CANSADO:", opcoes:["Exausto","Animado","Forte","Descansado"], resposta_correta:"Exausto"},
+{id:70, categoria:"sinonimos", titulo:"😊 Antônimo de jovem", pergunta:"Qual antônimo de JOVEM?", opcoes:["Velho","Novo","Alto","Pequeno"], resposta_correta:"Velho"},
+{id:71, categoria:"producao", titulo:"📚 Produção de lista", pergunta:"Assinale a opção que corresponde a uma lista de frutas:", opcoes:["Maçã, banana e uva","Correr, brincar, pular","Caneta, lápis, borracha","Amor, coragem, esperança"], resposta_correta:"Maçã, banana e uva"},
+{id:72, categoria:"producao", titulo:"📚 História curta", pergunta:"Qual começa uma história?", opcoes:["Era uma vez...","Comprei pão","Bonito dia","Acordei cedo"], resposta_correta:"Era uma vez..."},
+{id:73, categoria:"producao", titulo:"📚 Final de carta", pergunta:"Como você pode finalizar uma carta?", opcoes:["Com carinho","Era uma vez...","Comecei agora","Muito claro"], resposta_correta:"Com carinho"},
+{id:74, categoria:"producao", titulo:"📚 Personagem no texto", pergunta:"Qual opção mostra personagens?", opcoes:["João e Maria","Amigo e vizinho","Sol e chuva","Forte e fraco"], resposta_correta:"João e Maria"},
+{id:75, categoria:"producao", titulo:"📚 Tema de bilhete", pergunta:"Qual bilhete é para lembrar algo?", opcoes:["Não esqueça seu livro.","Cachorro bonito.","Vento frio hoje.","Gosto de chocolate."], resposta_correta:"Não esqueça seu livro."},
+{id:76, categoria:"producao", titulo:"📚 Frase", pergunta:"Qual é uma frase?", opcoes:["O gato dormiu.","Dormiu gato.","Dormiu.","Gato."], resposta_correta:"O gato dormiu."},
+{id:77, categoria:"producao", titulo:"📚 Cartão de aniversário", pergunta:"O que escrever em cartão de aniversário?", opcoes:["Parabéns!","Boa viagem!","Boa noite!","Até logo!"], resposta_correta:"Parabéns!"},
+{id:78, categoria:"producao", titulo:"📚 Descrição", pergunta:"Qual frase descreve uma bola?", opcoes:["A bola é redonda.","A bola come.","A bola dorme.","A bola ensina."], resposta_correta:"A bola é redonda."},
+{id:79, categoria:"producao", titulo:"📚 Notícia", pergunta:"Qual é notícia?", opcoes:["Hoje chove forte na cidade.","A casa está bonita.","Tenho caneta.","Comprei frutas."], resposta_correta:"Hoje chove forte na cidade."},
+{id:80, categoria:"producao", titulo:"📚 Começo de conto", pergunta:"Qual começa um conto?", opcoes:["Era uma vez...","Muito calor.","Belo desenho.","Gostei do lanche."], resposta_correta:"Era uma vez..."}
+];
+
+let jogoAtual = {
+    nomeJogador:'', questaoAtual:0, pontuacao:0,
+    opcaoSelecionada:null, questaoRespondida:false,
+    habilidadeAtual:0, questaoNaHabilidade:0
+};
+
+function mostrarTela(id) {
+    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+    document.getElementById(id).classList.add('ativa');
+}
+
+function montarGradeHabilidades() {
+    const div = document.getElementById('gradeHabilidades');
+    div.innerHTML = '';
+    HABILIDADES.forEach((habilidade, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card-habilidade';
+        card.textContent = `${idx + 1}. ${habilidade}`;
+        card.onclick = () => iniciarHabilidade(idx + 1);
+        div.appendChild(card);
+    });
+}
+
+function iniciarJogo() {
+    const nome = document.getElementById('nomeJogador').value.trim();
+    if (!nome) {
+        alert('Digite seu nome para começar!');
+        return;
+    }
+    jogoAtual.nomeJogador = nome;
+    document.getElementById('nomeNaTela').textContent = nome;
+    montarGradeHabilidades();
+    mostrarTela('telaHabilidades');
+}
+
+function voltarInicio() {
+    mostrarTela('telaInicial');
+}
+
+function voltarMenu() {
+    montarGradeHabilidades();
+    mostrarTela('telaHabilidades');
+}
+
+function iniciarHabilidade(idHabilidade) {
+    const blocos = [
+        {inicio:0,fim:9}, {inicio:10,fim:19}, {inicio:20,fim:29}, {inicio:30,fim:39},
+        {inicio:40,fim:49}, {inicio:50,fim:59}, {inicio:60,fim:69}, {inicio:70,fim:79}
+    ];
+    const faixa = blocos[idHabilidade-1];
+    jogoAtual.habilidadeAtual = idHabilidade;
+    jogoAtual.questaoAtual = faixa.inicio;
+    jogoAtual.questaoNaHabilidade = 0;
+    jogoAtual.opcaoSelecionada = null;
+    jogoAtual.questaoRespondida = false;
+    jogoAtual.pontuacao = 0;
+    document.getElementById('nomeJogadorJogo').textContent = jogoAtual.nomeJogador;
+    document.getElementById('pontuacaoAtual').textContent = jogoAtual.pontuacao;
+    document.getElementById('infoHabilidade').textContent = `Habilidade ${idHabilidade}: ${HABILIDADES[idHabilidade-1]}`;
+    mostrarTela('telaJogo');
+    carregarQuestao();
+}
+
+function carregarQuestao() {
+    const blocos = [
+        {inicio:0,fim:9}, {inicio:10,fim:19}, {inicio:20,fim:29}, {inicio:30,fim:39},
+        {inicio:40,fim:49}, {inicio:50,fim:59}, {inicio:60,fim:69}, {inicio:70,fim:79}
+    ];
+    const faixa = blocos[jogoAtual.habilidadeAtual-1];
+    if (jogoAtual.questaoAtual > faixa.fim) {
+        mostrarTela('telaFinal');
+        document.getElementById('pontuacaoFinal').textContent = `${jogoAtual.pontuacao}`;
+        return;
+    }
+    const q = QUESTOES[jogoAtual.questaoAtual];
+    document.getElementById('tituloQuestao').textContent = q.titulo||"";
+    document.getElementById('textoPergunta').textContent = q.pergunta||"";
+    const opcoesDiv = document.getElementById('opcoesResposta');
+    opcoesDiv.innerHTML = '';
+    q.opcoes.forEach((opcao, idx) => {
+        const botao = document.createElement('button');
+        botao.className = 'opcao';
+        botao.textContent = opcao;
+        botao.onclick = () => selecionarOpcao(botao, idx);
+        opcoesDiv.appendChild(botao);
+    });
+    const atual = jogoAtual.questaoAtual - faixa.inicio + 1;
+    const total = faixa.fim - faixa.inicio + 1;
+    document.getElementById('contadorQuestao').textContent = `Questão ${atual} de ${total}`;
+    document.getElementById('pontuacaoAtual').textContent = jogoAtual.pontuacao;
+    document.getElementById('feedbackArea').classList.add('oculto');
+    document.getElementById('btnResponder').classList.remove('oculto');
+    document.getElementById('btnProximo').classList.add('oculto');
+    document.getElementById('btnMenu').classList.add('oculto');
+    jogoAtual.questaoRespondida = false;
+    jogoAtual.opcaoSelecionada = null;
+}
+
+function selecionarOpcao(botao, idx) {
+    if (jogoAtual.questaoRespondida) return;
+    document.querySelectorAll('.opcao').forEach(b => b.classList.remove('selecionada'));
+    botao.classList.add('selecionada');
+    jogoAtual.opcaoSelecionada = idx;
+}
+
+function verificarResposta() {
+    if (jogoAtual.questaoRespondida) return;
+    if (jogoAtual.opcaoSelecionada === null) {
+        alert('Por favor, selecione uma opção!');
+        return;
+    }
+    const q = QUESTOES[jogoAtual.questaoAtual];
+    jogoAtual.questaoRespondida = true;
+    const opcoes = document.querySelectorAll('.opcao');
+    opcoes.forEach((b, i) => {
+        if (i === jogoAtual.opcaoSelecionada) {
+            if (b.textContent === q.resposta_correta) {
+                b.classList.add('correta');
+                jogoAtual.pontuacao++;
+                document.getElementById('pontuacaoAtual').textContent = jogoAtual.pontuacao;
+                mostrarFeedback(true);
+            } else {
+                b.classList.add('incorreta');
+                mostrarFeedback(false, q.resposta_correta);
+            }
+        } else if (b.textContent === q.resposta_correta) {
+            b.classList.add('correta');
+        }
+    });
+    document.getElementById('btnResponder').classList.add('oculto');
+    document.getElementById('btnProximo').classList.remove('oculto');
+    document.getElementById('btnMenu').classList.remove('oculto');
+}
+
+function mostrarFeedback(acertou, respostaCorreta) {
+    const feedbackArea = document.getElementById('feedbackArea');
+    feedbackArea.classList.remove('oculto');
+    if (acertou) {
+        feedbackArea.className = 'feedback correto';
+        feedbackArea.textContent = '🎉 Resposta correta!';
+    } else {
+        feedbackArea.className = 'feedback incorreto';
+        feedbackArea.textContent = '😕 Resposta errada! A resposta correta é: ' + respostaCorreta;
+    }
+}
+
+function proximaQuestao() {
+    jogoAtual.questaoAtual++;
+    jogoAtual.questaoNaHabilidade++;
+    carregarQuestao();
+}
+function reiniciarJogo() {
+    location.reload();
+}
+</script>
+</body>
+</html>

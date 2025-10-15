@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo Educativo - Educação Ambiental</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #e0f7e9;
+    color: #2b5d34;
+    margin: 0;
+    padding: 0;
+  }
+  #app {
+    max-width: 640px;
+    margin: 20px auto;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #1b3b21;
+  }
+  button {
+    cursor: pointer;
+    background-color: #1b3b21;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    padding: 10px 20px;
+    margin: 10px auto;
+    display: block;
+    transition: background-color 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background-color: #154018;
+  }
+  button:disabled {
+    background-color: #999;
+    cursor: default;
+  }
+  .question {
+    margin-top: 20px;
+    font-size: 1.2rem;
+  }
+  .answers {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .answers button {
+    background-color: #4caf50;
+    font-weight: 600;
+    color: white;
+  }
+  .answers button:hover:not(:disabled) {
+    background-color: #357a38;
+  }
+  .answers button.wrong {
+    background-color: #cc4444 !important;
+    color: white !important;
+  }
+  #feedback {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.15rem;
+    min-height: 24px;
+  }
+  #feedback.correct {
+    color: green;
+  }
+  #feedback.wrong {
+    color: red;
+  }
+  #scoreboard {
+    margin-top: 20px;
+    font-size: 1rem;
+    text-align: center;
+    font-weight: bold;
+  }
+  #endScreen {
+    text-align: center;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Jogo de Educação Ambiental</h1>
+  <div id="startScreen">
+    <p>Bem-vindo(a) ao jogo educativo sobre educação ambiental! Clique no botão abaixo para iniciar.</p>
+    <button id="startBtn">Iniciar Jogo</button>
+  </div>
+  <div id="gameScreen" style="display:none;">
+    <div class="question" id="questionText"></div>
+    <div class="answers" id="answersContainer"></div>
+    <div id="feedback"></div>
+    <button id="nextBtn" style="display:none;">Próxima Pergunta</button>
+    <div id="scoreboard"></div>
+  </div>
+  <div id="endScreen" style="display:none;">
+    <h2>Parabéns!</h2>
+    <p id="finalMessage"></p>
+    <p id="finalScore"></p>
+    <button id="restartBtn">Jogar Novamente</button>
+  </div>
+</div>
+
+<script>
+  // NÃO QUEBRE O ARQUIVO. Envie o arquivo COMPLETO do início ao fim, tudo em UM bloco para copiar e colar.
+
+  const questions = [
+    { question: "O que devemos fazer para economizar água?", answers: ["Fechar a torneira ao escovar os dentes", "Deixar a torneira aberta", "Tomar banhos longos", "Lavar o carro todos os dias"], correctIndex: 0 },
+    { question: "Qual é o lixo que pode ser reciclado?", answers: ["Papel, plástico e vidro", "Restos de comida", "Papel sujo e molhado", "Pneus usados"], correctIndex: 0 },
+    { question: "Por que devemos plantar árvores?", answers: ["Porque produzem oxigênio", "Porque fazem barulho", "Porque ocupam espaço", "Porque causam sujeira"], correctIndex: 0 },
+    { question: "Qual destes é um animal que ajuda a polinizar as plantas?", answers: ["Abelha", "Cachorro", "Pombo", "Leão"], correctIndex: 0 },
+    { question: "O que é lixo orgânico?", answers: ["Restos de comida e plantas", "Plástico e metal", "Papel e vidro", "Lixo radioativo"], correctIndex: 0 },
+    { question: "Para conservar a natureza, devemos:", answers: ["Não jogar lixo no chão", "Queimar lixo na rua", "Desmatar florestas", "Poluir rios"], correctIndex: 0 },
+    { question: "Qual dessas fontes de energia é renovável?", answers: ["Energia solar", "Carvão", "Petróleo", "Gás natural"], correctIndex: 0 },
+    { question: "O que é biodiversidade?", answers: ["Variedade de plantas e animais", "Só plantas", "Só animais", "Quantidades de lixo"], correctIndex: 0 },
+    { question: "Qual é a importância da reciclagem?", answers: ["Reduzir lixo no meio ambiente", "Aumentar o lixo", "Poluir o solo", "Destruir florestas"], correctIndex: 0 },
+    { question: "Por que não devemos desperdiçar energia elétrica?", answers: ["Para preservar recursos naturais", "Para gastar mais dinheiro", "Porque é engraçado", "Porque fica escuro"], correctIndex: 0 },
+    { question: "O que é coleta seletiva?", answers: ["Separar lixo para reciclagem", "Jogar tudo no mesmo saco", "Queimar lixo", "Descartar no rio"], correctIndex: 0 },
+    { question: "Qual destes protege o meio ambiente?", answers: ["Reciclar", "Queimar lixo", "Poluir rios", "Desmatar"], correctIndex: 0 },
+    { question: "Qual o principal responsável pelo desmatamento?", answers: ["Ser humano", "Vento", "Animais", "Chuva"], correctIndex: 0 },
+    { question: "Qual destas atitudes ajuda o planeta?", answers: ["Apagar a luz ao sair", "Deixar luz acesa", "Jogar lixo na rua", "Gastar água"], correctIndex: 0 },
+    { question: "O que devemos fazer com pilhas usadas?", answers: ["Levar em posto de coleta", "Jogar no lixo comum", "Enterrar", "Descartar no vaso"], correctIndex: 0 },
+    { question: "Qual é a importância das abelhas?", answers: ["Polinizam plantas", "Decompõem lixo", "Produzem gás carbônico", "Comem folhas"], correctIndex: 0 },
+    { question: "Por que não devemos queimar lixo?", answers: ["Polui o ar", "Perfuma o ambiente", "Ajuda as plantas", "Atrai pássaros"], correctIndex: 0 },
+    { question: "Qual destas é uma atitude sustentável?", answers: ["Usar ecobag nas compras", "Usar sacola plástica", "Jogar lixo no chão", "Desmatar"], correctIndex: 0 },
+    { question: "O que evita enchentes nas cidades?", answers: ["Não jogar lixo nos bueiros", "Desmatar margens dos rios", "Construir em áreas de risco", "Poluir rios"], correctIndex: 0 },
+    { question: "Qual é o ciclo da água?", answers: ["Evaporação, condensação e precipitação", "Desmatamento e poluição", "Transporte e armazenamento", "Consumo e descarte"], correctIndex: 0 },
+    { question: "O que podemos fazer para manter rios limpos?", answers: ["Não jogar lixo nas águas", "Lavar carros no rio", "Jogar óleo no rio", "Construir sobre rios"], correctIndex: 0 },
+    { question: "O que é sustentabilidade?", answers: ["Usar recursos sem prejudicar o futuro", "Gastar tudo rápido", "Desperdiçar água", "Poluir o meio ambiente"], correctIndex: 0 },
+    { question: "Qual animal está ameaçado pelo desmatamento?", answers: ["Onça-pintada", "Cachorro", "Gato", "Vaca"], correctIndex: 0 },
+    { question: "Por que devemos proteger as florestas?", answers: ["Produzem oxigênio, água e abrigo", "Para fazer queimadas", "Para construir rodovias", "Porque ocupam espaço"], correctIndex: 0 },
+    { question: "Qual destes materiais leva mais tempo para se decompor?", answers: ["Plástico", "Papel", "Fruta", "Folha"], correctIndex: 0 },
+    { question: "Qual o principal efeito do aquecimento global?", answers: ["Mudanças climáticas", "Mais flores", "Menos lixo", "Água limpa"], correctIndex: 0 },
+    { question: "O que significa poluir?", answers: ["Contaminar o ambiente", "Cuidar das plantas", "Reciclar materiais", "Economizar água"], correctIndex: 0 },
+    { question: "O que podemos fazer com óleo de cozinha usado?", answers: ["Levar em posto de coleta", "Jogar na pia", "Jogar na terra", "Colocar no lixo seco"], correctIndex: 0 },
+    { question: "O que devemos fazer ao visitar ambientes naturais?", answers: ["Respeitar a natureza", "Jogar lixo no chão", "Acender fogueiras", "Quebrar plantas"], correctIndex: 0 },
+    { question: "Por que não devemos cortar árvores sem permissão?", answers: ["Podem ser fundamentais ao equilíbrio ambiental", "Para fazer móveis", "Para abrir espaço", "Para vender madeira"], correctIndex: 0 },
+    { question: "Como ajudar animais domésticos?", answers: ["Cuidando, vacinando e alimentando", "Soltando na rua", "Jogando lixo na casa", "Pintando os animais"], correctIndex: 0 },
+    { question: "O que é lixo eletrônico?", answers: ["Pilhas, baterias, celulares e computadores velhos", "Frutas", "Restos de comida", "Plantas"], correctIndex: 0 },
+    { question: "Como contribuir para a melhoria do ar?", answers: ["Plantar árvores", "Queimar lixo", "Poluir rios", "Jogar lixo em terrenos"], correctIndex: 0 },
+    { question: "Por que reciclar papel é importante?", answers: ["Diminui o corte de árvores", "Polui rios", "Gera fumaça", "Aumenta o lixo"], correctIndex: 0 },
+    { question: "Qual recurso é finito e precisa ser economizado?", answers: ["Água", "Vento", "Luz solar", "Areia"], correctIndex: 0 },
+    { question: "O que o desmatamento pode causar?", answers: ["Enchentes e extinção de espécies", "Mais sombra", "Mais flores", "Chuva"], correctIndex: 0 },
+    { question: "Por que devemos separar o lixo?", answers: ["Facilita a reciclagem", "Deixa bonito", "Perfuma a casa", "Combina cores"], correctIndex: 0 },
+    { question: "O que acontece se jogarmos pilhas no lixo comum?", answers: ["Contamina o solo e a água", "Nada", "Elas reciclam sozinhas", "Virarão árvores"], correctIndex: 0 },
+    { question: "Como devemos cuidar das praças públicas?", answers: ["Não jogar lixo nelas", "Plantar lixo", "Queimar árvores", "Arrancar flores"], correctIndex: 0 },
+    { question: "O que são espécies ameaçadas?", answers: ["Animais ou plantas em risco de extinção", "Espécies abundantes", "Espécies de supermercado", "Espécies marítimas"], correctIndex: 0 },
+    { question: "Por que devemos economizar papel?", answers: ["Salvar árvores e água", "Fazer mais lixo", "Poluir o solo", "Produzir fumaça"], correctIndex: 0 },
+    { question: "O que fazer com resíduos de poda do jardim?", answers: ["Transformar em adubo", "Colocar no lixo comum", "Enterrar com plásticos", "Jogar em bueiros"], correctIndex: 0 },
+    { question: "Qual destas atitudes protege a fauna?", answers: ["Não capturar animais silvestres", "Acender fogueiras", "Jogar lixo no mato", "Arrancar flores"], correctIndex: 0 },
+    { question: "Qual destas ações diminui o lixo?", answers: ["Reutilizar objetos", "Usar tudo descartável", "Comprar muito plástico", "Descartar tudo"], correctIndex: 0 },
+    { question: "O que é compostagem?", answers: ["Transformar restos orgânicos em adubo", "Misturar lixo", "Queimar folhas", "Jogar resíduos no rio"], correctIndex: 0 },
+    { question: "Como evitar a poluição da água?", answers: ["Descarte correto de resíduos", "Jogar lixo nos rios", "Lavar carro no rio", "Deixar torneira aberta"], correctIndex: 0 },
+    { question: "O que é uma nascente?", answers: ["Onde nasce um rio", "Um tipo de árvore", "Um animal marinho", "Um inseto"], correctIndex: 0 },
+    { question: "Qual destes produtos prejudica o meio ambiente?", answers: ["Plástico descartável", "Folhas secas", "Água da chuva", "Pedras"], correctIndex: 0 },
+    { question: "O que é ecoturismo?", answers: ["Turismo que respeita a natureza", "Passeios de carro", "Visitas a shoppings", "Festas em áreas urbanas"], correctIndex: 0 },
+    { question: "Como você pode ajudar o planeta?", answers: ["Economizando água e energia", "Jogando lixo na rua", "Desmatando", "Gastando sem pensar"], correctIndex: 0 }
+  ];
+
+  const totalQuestions = questions.length;
+  let currentQuestionIndex = 0;
+  let correctAnswers = 0;
+
+  const startScreen = document.getElementById('startScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const endScreen = document.getElementById('endScreen');
+  const questionText = document.getElementById('questionText');
+  const answersContainer = document.getElementById('answersContainer');
+  const feedback = document.getElementById('feedback');
+  const nextBtn = document.getElementById('nextBtn');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const scoreboard = document.getElementById('scoreboard');
+  const finalMessage = document.getElementById('finalMessage');
+  const finalScore = document.getElementById('finalScore');
+
+  startBtn.addEventListener('click', startGame);
+  nextBtn.addEventListener('click', loadNextQuestion);
+  restartBtn.addEventListener('click', restartGame);
+
+  function startGame() {
+    startScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    currentQuestionIndex = 0;
+    correctAnswers = 0;
+    updateScoreboard();
+    showQuestion(questions[currentQuestionIndex]);
+  }
+
+  function showQuestion(questionObj) {
+    questionText.textContent = questionObj.question;
+    answersContainer.innerHTML = '';
+    feedback.textContent = '';
+    feedback.className = '';
+    nextBtn.style.display = 'none';
+
+    questionObj.answers.forEach((answer, index) => {
+      const btn = document.createElement('button');
+      btn.textContent = answer;
+      btn.className = '';
+      btn.disabled = false;
+      btn.addEventListener('click', () => selectAnswer(index, btn));
+      answersContainer.appendChild(btn);
+    });
+
+    updateScoreboard();
+  }
+
+  function selectAnswer(selectedIndex, button) {
+    const question = questions[currentQuestionIndex];
+    if (selectedIndex === question.correctIndex) {
+      const buttons = answersContainer.querySelectorAll('button');
+      buttons.forEach(b => b.disabled = true);
+      feedback.textContent = 'Resposta correta! Muito bem!';
+      feedback.className = 'correct';
+      correctAnswers++;
+      nextBtn.style.display = currentQuestionIndex < totalQuestions - 1 ? 'block' : 'none';
+      if(currentQuestionIndex === totalQuestions - 1){
+        showEndScreen();
+      }
+      updateScoreboard();
+    } else {
+      button.classList.add('wrong');
+      feedback.textContent = `Resposta incorreta! Tente novamente.`;
+      feedback.className = 'wrong';
+    }
+  }
+
+  function loadNextQuestion() {
+    currentQuestionIndex++;
+    if(currentQuestionIndex < totalQuestions) {
+      showQuestion(questions[currentQuestionIndex]);
+    }
+  }
+
+  function showEndScreen() {
+    gameScreen.style.display = 'none';
+    endScreen.style.display = 'block';
+    finalMessage.textContent = `Você completou o jogo!`;
+    finalScore.textContent = `Seu desempenho: ${correctAnswers} de ${totalQuestions} respostas corretas.`;
+  }
+
+  function restartGame() {
+    endScreen.style.display = 'none';
+    startScreen.style.display = 'block';
+  }
+
+  function updateScoreboard() {
+    scoreboard.textContent = `Pergunta ${currentQuestionIndex + 1} de ${totalQuestions} | Acertos: ${correctAnswers}`;
+  }
+</script>
+</body>
+</html>

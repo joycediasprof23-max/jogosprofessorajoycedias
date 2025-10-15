@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo Educativo - Curiosidades dos Animais</title>
+<style>
+  /* Estilo básico para o jogo, inspirado no padrão dos seus jogos anteriores */
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f8ff;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  #app {
+    max-width: 640px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #2b5d34;
+  }
+  button {
+    cursor: pointer;
+    background-color: #2b5d34;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    padding: 10px 20px;
+    margin: 10px auto;
+    display: block;
+    transition: background-color 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background-color: #1e3e21;
+  }
+  button:disabled {
+    background-color: #999;
+    cursor: default;
+  }
+  .question {
+    margin-top: 20px;
+    font-size: 1.2rem;
+  }
+  .answers {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .answers button {
+    background-color: #5aae59;
+    font-weight: 600;
+    color: white;
+  }
+  .answers button:hover:not(:disabled) {
+    background-color: #417634;
+  }
+  .answers button.wrong {
+    background-color: #cc4444 !important;
+    color: white !important;
+  }
+  #feedback {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.15rem;
+    min-height: 24px;
+  }
+  #feedback.correct {
+    color: green;
+  }
+  #feedback.wrong {
+    color: red;
+  }
+  #scoreboard {
+    margin-top: 20px;
+    font-size: 1rem;
+    text-align: center;
+    font-weight: bold;
+  }
+  #endScreen {
+    text-align: center;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Jogo de Ciências – Curiosidades dos Animais</h1>
+  <div id="startScreen">
+    <p>Bem-vindo(a) ao jogo educativo de curiosidades sobre animais! Clique no botão abaixo para iniciar.</p>
+    <button id="startBtn">Iniciar Jogo</button>
+  </div>
+  <div id="gameScreen" style="display:none;">
+    <div class="question" id="questionText">Pergunta aqui</div>
+    <div class="answers" id="answersContainer"></div>
+    <div id="feedback"></div>
+    <button id="nextBtn" style="display:none;">Próxima Pergunta</button>
+    <div id="scoreboard">Pergunta 0 de 0 | Acertos: 0</div>
+  </div>
+  <div id="endScreen" style="display:none;">
+    <h2>Parabéns!</h2>
+    <p id="finalMessage"></p>
+    <p id="finalScore"></p>
+    <button id="restartBtn">Jogar Novamente</button>
+  </div>
+</div>
+
+<script>
+  // NÃO QUEBRE O ARQUIVO. Envie o arquivo COMPLETO do início ao fim, tudo em UM bloco para copiar e colar.
+
+  const questions = [
+    { question: "Qual é o maior animal terrestre?", answers: ["Elefante", "Girafa", "Hipopótamo", "Rinoceronte"], correctIndex: 0 },
+    { question: "Qual animal é conhecido por sua capacidade de mudar de cor?", answers: ["Camaleão", "Polvo", "Papagaio", "Cobra"], correctIndex: 0 },
+    { question: "Qual é o mamífero mais rápido?", answers: ["Leopardo", "Guepardo", "Cavalo", "Lobo"], correctIndex: 1 },
+    { question: "Qual destes animais é um marsupial?", answers: ["Canguru", "Coala", "Vaquinha", "Coruja"], correctIndex: 0 },
+    { question: "Que animal é famoso por sua longa tromba?", answers: ["Elefante", "Jacaré", "Girafa", "Cavalo"], correctIndex: 0 },
+    { question: "Qual ave não voa, mas corre muito rápido?", answers: ["Avestruz", "Pinguim", "Ema", "Galinha"], correctIndex: 0 },
+    { question: "Qual animal marinho tem oito braços?", answers: ["Polvo", "Camarão", "Cavalo-marinho", "Lula"], correctIndex: 0 },
+    { question: "Qual é o som que um gato faz?", answers: ["Miado", "Latido", "Mugido", "Pio"], correctIndex: 0 },
+    { question: "Qual animal é conhecido como o rei da selva?", answers: ["Leão", "Elefante", "Tigre", "Lobo"], correctIndex: 0 },
+    { question: "Qual réptil troca regularmente de pele?", answers: ["Cobra", "Crocodilo", "Tartaruga", "Lagarto"], correctIndex: 0 },
+    { question: "Quantas patas tem uma aranha?", answers: ["Oito", "Seis", "Quatro", "Duas"], correctIndex: 0 },
+    { question: "Qual animal é símbolo da sabedoria e voa à noite?", answers: ["Coruja", "Águia", "Falcão", "Pomba"], correctIndex: 0 },
+    { question: "Qual destes animais vive na água doce?", answers: ["Jacaré", "Tubarão", "Baleia", "Foca"], correctIndex: 0 },
+    { question: "Qual é o único animal que pode voar para trás?", answers: ["Beija-flor", "Pombo", "Andorinha", "Águia"], correctIndex: 0 },
+    { question: "Qual animal produz mel?", answers: ["Abelha", "Borboleta", "Vespa", "Formiga"], correctIndex: 0 },
+    { question: "Onde vivem os pinguins?", answers: ["No Polo Sul", "Na floresta", "No deserto", "Na savana"], correctIndex: 0 },
+    { question: "Qual é o maior peixe do mundo?", answers: ["Tubarão-baleia", "Peixe-palhaço", "Atum", "Bacalhau"], correctIndex: 0 },
+    { question: "Qual animal tem uma longa língua para pegar formigas?", answers: ["Tamanduá", "Tatu", "Rinoceronte", "Camaleão"], correctIndex: 0 },
+    { question: "Qual animal é conhecido por sua corrida rápida e chifres curvos?", answers: ["Antílope", "Búfalo", "Cervo", "Veado"], correctIndex: 0 },
+    { question: "Como os morcegos se orientam no escuro?", answers: ["Ecolocalização", "Visão noturna", "Olfato", "Tato"], correctIndex: 0 },
+    { question: "Qual animal é famoso por guardar ovelhas?", answers: ["Cão pastor", "Gato", "Porco", "Pombo"], correctIndex: 0 },
+    { question: "Qual animal é conhecido por sua inteligência e uso de ferramentas?", answers: ["Macaco", "Cavalo", "Coelho", "Peixe"], correctIndex: 0 },
+    { question: "Qual animal possui asas mas não é uma ave?", answers: ["Morcego", "Pinguim", "Borboleta", "Mosca"], correctIndex: 0 },
+    { question: "Qual destes animais vive em colônias e constrói tocas?", answers: ["Formiga", "Cavalo", "Elefante", "Lobo"], correctIndex: 0 },
+    { question: "Como os peixes respiram debaixo d'água?", answers: ["Brânquias", "Pulmões", "Pele", "Narinas"], correctIndex: 0 },
+    { question: "Qual animal é conhecido por sua língua pegajosa para pegar insetos?", answers: ["Sapo", "Rato", "Cobra", "Pássaro"], correctIndex: 0 },
+    { question: "Qual destes animais pode regenerar membros?", answers: ["Estrela do mar", "Cachorro", "Elefante", "Tatu"], correctIndex: 0 },
+    { question: "Quantos corações tem um polvo?", answers: ["Três", "Um", "Dois", "Quatro"], correctIndex: 0 },
+    { question: "Qual animal é conhecido por sua camuflagem na água?", answers: ["Polvo", "Tubarão", "Sapo", "Cavalo-marinho"], correctIndex: 3 },
+    { question: "Que animal é símbolo da paz?", answers: ["Pomba", "Cão", "Leão", "Gato"], correctIndex: 0 },
+    { question: "Qual é o menor pássaro do mundo?", answers: ["Beija-flor", "Pardal", "Canário", "Pombo"], correctIndex: 0 },
+    { question: "Qual animal vive em árvores e é muito lento?", answers: ["Bicho-preguiça", "Mico", "Macaco", "Cervo"], correctIndex: 0 },
+    { question: "Qual destes é um anfíbio?", answers: ["Sapo", "Lagarto", "Águia", "Cavalo"], correctIndex: 0 },
+    { question: "Qual animal possui carapaça dura que protege seu corpo?", answers: ["Tartaruga", "Coelho", "Gato", "Cachorro"], correctIndex: 0 },
+    { question: "Qual é a principal função das penas nas aves?", answers: ["Voar", "Comer", "Dormir", "Nadar"], correctIndex: 0 },
+    { question: "Qual animal emite sons por meio de guinchos e gritos?", answers: ["Morcego", "Gato", "Elefante", "Pássaro"], correctIndex: 0 },
+    { question: "Qual animal tem uma língua azul?", answers: ["Lagarto de língua azul", "Cachorro", "Tatu", "Gato"], correctIndex: 0 },
+    { question: "Qual animal se diz o mais inteligente da água?", answers: ["Golfinho", "Baleia", "Tubarão", "Peixe-palhaço"], correctIndex: 0 },
+    { question: "Qual animal infecta presas com veneno através de mordida?", answers: ["Cobra", "Coelho", "Leão", "Pomba"], correctIndex: 0 },
+    { question: "O que os castores constroem para se proteger?", answers: ["Barragens", "Ninhos", "Tochas", "Tocas"], correctIndex: 0 },
+    { question: "Qual destes animais tem visão noturna poderosa?", answers: ["Coruja", "Beija-flor", "Galinha", "Cavalo"], correctIndex: 0 },
+    { question: "Que tipo de animal é o ornitorrinco?", answers: ["Mamífero que bota ovos", "Réptil", "Ave", "Peixe"], correctIndex: 0 },
+    { question: "Qual animal marinho possui uma concha espiral?", answers: ["Caramujo", "Polvo", "Tubarão", "Camarão"], correctIndex: 0 },
+    { question: "Qual é a principal alimentação do panda?", answers: ["Bambu", "Mel", "Insetos", "Carne"], correctIndex: 0 },
+    { question: "Qual animal pode viver tanto na água quanto na terra?", answers: ["Sapo", "Tartaruga", "Elefante", "Macaco"], correctIndex: 0 },
+    { question: "Qual animal é conhecido por suas manchas pretas e brancas?", answers: ["Zebra", "Leopardo", "Guepardo", "Girafa"], correctIndex: 0 },
+    { question: "Qual destes animais tem longos chifres?", answers: ["Búfalo", "Porco", "Elefante", "Girafa"], correctIndex: 0 },
+    { question: "Qual animal emite luz no escuro (bioluminescência)?", answers: ["Vaga-lume", "Cavalo", "Pombo", "Gato"], correctIndex: 0 },
+    { question: "Qual é a principal forma de defesa do ouriço-do-mar?", answers: ["Espinhos", "Corre rápido", "Esconde-se", "Morde"], correctIndex: 0 },
+    { question: "Qual animal é famoso por sua imitação de sons humanos?", answers: ["Papagaio", "Galo", "Cachorro", "Cavalo"], correctIndex: 0 },
+    { question: "Qual é o habitat natural do lobo?", answers: ["Floresta", "Deserto", "Montanhas", "Praia"], correctIndex: 0 },
+    { question: "Qual animal que voa tem o maior envergadura de asas?", answers: ["Albatroz", "Águia", "Coruja", "Falcão"], correctIndex: 0 },
+    { question: "Qual destes animais pode armazenar água no corpo para sobreviver no deserto?", answers: ["Camelo", "Elefante", "Cachorro", "Cavalo"], correctIndex: 0 },
+    { question: "Qual é o animal mais pesado do mundo?", answers: ["Baleia-azul", "Elefante", "Rinoceronte", "Hipopótamo"], correctIndex: 0 }
+  ];
+
+  const totalQuestions = questions.length;
+  let currentQuestionIndex = 0;
+  let correctAnswers = 0;
+
+  const startScreen = document.getElementById('startScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const endScreen = document.getElementById('endScreen');
+  const questionText = document.getElementById('questionText');
+  const answersContainer = document.getElementById('answersContainer');
+  const feedback = document.getElementById('feedback');
+  const nextBtn = document.getElementById('nextBtn');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const scoreboard = document.getElementById('scoreboard');
+  const finalMessage = document.getElementById('finalMessage');
+  const finalScore = document.getElementById('finalScore');
+
+  startBtn.addEventListener('click', startGame);
+  nextBtn.addEventListener('click', loadNextQuestion);
+  restartBtn.addEventListener('click', restartGame);
+
+  function startGame() {
+    startScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    currentQuestionIndex = 0;
+    correctAnswers = 0;
+    updateScoreboard();
+    showQuestion(questions[currentQuestionIndex]);
+  }
+
+  function showQuestion(questionObj) {
+    questionText.textContent = questionObj.question;
+    answersContainer.innerHTML = '';
+    feedback.textContent = '';
+    feedback.className = '';
+    nextBtn.style.display = 'none';
+
+    questionObj.answers.forEach((answer, index) => {
+      const btn = document.createElement('button');
+      btn.textContent = answer;
+      btn.className = ''; // reset classes
+      btn.disabled = false;
+      btn.addEventListener('click', () => selectAnswer(index, btn));
+      answersContainer.appendChild(btn);
+    });
+
+    updateScoreboard();
+  }
+
+  function selectAnswer(selectedIndex, button) {
+    const question = questions[currentQuestionIndex];
+    if (selectedIndex === question.correctIndex) {
+      // Correto: desabilita todos os botões e mostra feedback verde e botão próxima
+      const buttons = answersContainer.querySelectorAll('button');
+      buttons.forEach(b => b.disabled = true);
+      feedback.textContent = 'Resposta correta! Muito bem!';
+      feedback.className = 'correct';
+      correctAnswers++;
+      nextBtn.style.display = currentQuestionIndex < totalQuestions - 1 ? 'block' : 'none';
+      if(currentQuestionIndex === totalQuestions - 1){
+        showEndScreen();
+      }
+      updateScoreboard();
+    } else {
+      // Errado: marca botão errado em vermelho, mostra feedback vermelho e mantém possibilidade de responder novamente
+      button.classList.add('wrong');
+      feedback.textContent = `Resposta incorreta! Tente novamente.`;
+      feedback.className = 'wrong';
+      // NÃO desabilita botões para permitir nova tentativa
+    }
+  }
+
+  function loadNextQuestion() {
+    currentQuestionIndex++;
+    if(currentQuestionIndex < totalQuestions) {
+      showQuestion(questions[currentQuestionIndex]);
+    }
+  }
+
+  function showEndScreen() {
+    gameScreen.style.display = 'none';
+    endScreen.style.display = 'block';
+    finalMessage.textContent = `Você completou o jogo!`;
+    finalScore.textContent = `Seu desempenho: ${correctAnswers} de ${totalQuestions} respostas corretas.`;
+  }
+
+  function restartGame() {
+    endScreen.style.display = 'none';
+    startScreen.style.display = 'block';
+  }
+
+  function updateScoreboard() {
+    scoreboard.textContent = `Pergunta ${currentQuestionIndex + 1} de ${totalQuestions} | Acertos: ${correctAnswers}`;
+  }
+</script>
+</body>
+</html>
+
+
+
