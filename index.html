@@ -948,4 +948,229 @@ function salvarDesempenhoAluno(jogoNome, nomeAluno, pontos, total) {
 </script>
 </body>
 </html>
+<script>
+// Utilitário: Fisher–Yates para embaralhar
+function embaralhar(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+// Estado do jogo
+var jogoAtual = {
+  nomeJogador: "",
+  jogoSelecionado: 0,
+  questaoAtual: 0,
+  pontuacao: 0,
+  opcaoSelecionada: null,
+  questaoRespondida: false
+};
+
+// Funções de navegação de telas
+function mostrarTela(id) {
+  document.querySelectorAll(".tela").forEach(t => {
+    t.classList.remove("ativa");
+    t.style.display = "none";
+  });
+  var el = document.getElementById(id);
+  el.style.display = "block";
+  el.classList.add("ativa");
+}
+
+function irEscolherJogo() {
+  var nome = document.getElementById("nomeJogador").value.trim();
+  if (!nome) { alert("Digite seu nome!"); return; }
+  jogoAtual.nomeJogador = nome;
+  document.getElementById("nomeNaTela").textContent = nome;
+  montarGradeJogos();
+  mostrarTela("telaEscolha");
+}
+
+function voltarInicio() {
+  mostrarTela("telaInicial");
+}
+
+function voltarMenu() {
+  montarGradeJogos();
+  mostrarTela("telaEscolha");
+}
+
+function abrirAreaProfessor() {
+  mostrarTela("telaProfessor");
+  var tbody = document.querySelector("#tabelaDesempenho tbody");
+  tbody.innerHTML = "";
+  var lista = JSON.parse(localStorage.getItem("desempenhoAlunos")||"[]");
+  lista.forEach(reg => {
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>"+reg.jogo+"</td><td>"+reg.nome+"</td><td>"+reg.pontos+"</td><td>"+reg.total+"</td><td>"+reg.data+"</td>";
+    tbody.appendChild(tr);
+  });
+}
+
+function limparDesempenho() {
+  if (confirm("Apagar todos os resultados?")) {
+    localStorage.removeItem("desempenhoAlunos");
+    abrirAreaProfessor();
+  }
+}
+
+// Monta cards de jogos
+function montarGradeJogos() {
+  var div = document.getElementById("gradeJogos");
+  div.innerHTML = "";
+  JOGOS.forEach((j,i) => {
+    var card = document.createElement("div");
+    card.className = "card-jogo";
+    card.textContent = j.nome+" ("+j.perguntas.length+" questões)";
+    card.style.borderColor = j.cor;
+    card.onclick = () => iniciarJogo(i);
+    div.appendChild(card);
+  });
+}
+
+// Inicia o jogo
+function iniciarJogo(idx) {
+  jogoAtual.jogoSelecionado = idx;
+  jogoAtual.questaoAtual = 0;
+  jogoAtual.pontuacao = 0;
+  jogoAtual.opcaoSelecionada = null;
+  jogoAtual.questaoRespondida = false;
+  document.getElementById("nomeJogadorJogo").textContent = jogoAtual.nomeJogador;
+  document.getElementById("pontuacaoAtual").textContent = jogoAtual.pontuacao;
+  document.getElementById("infoJogo").textContent = JOGOS[idx].nome;
+  mostrarTela("telaJogo");
+  carregarQuestao();
+}
+
+// Carrega questão com embaralhamento
+function carregarQuestao() {
+  var jogo = JOGOS[jogoAtual.jogoSelecionado];
+  if (jogoAtual.questaoAtual >= jogo.perguntas.length) {
+    mostrarTela("telaFinal");
+    document.getElementById("pontuacaoFinal").textContent = jogoAtual.pontuacao;
+    document.getElementById("totalQuestoes").textContent = jogo.perguntas.length;
+    salvarDesempenhoAluno(jogo.nome, jogoAtual.nomeJogador, jogoAtual.pontuacao, jogo.perguntas.length);
+    return;
+  }
+  var q = jogo.perguntas[jogoAtual.questaoAtual];
+  document.getElementById("tituloQuestao").textContent = q.titulo||"";
+  document.getElementById("textoPergunta").textContent = q.pergunta||q.question||"";
+  var opcoesDiv = document.getElementById("opcoesResposta");
+  opcoesDiv.innerHTML = "";
+  var arr=[];
+  if (jogo.tipo==="default") {
+    arr = q.opcoes.map(o=>({texto:o,correta:o===q.resposta_correta}));
+  } else if (jogo.tipo==="ambiental"||jogo.tipo==="animais") {
+    arr = q.answers.map((a,i)=>({texto:a,correta:i===q.correctIndex}));
+  } else if (jogo.tipo==="relogio") {
+    var idxs=[0,1,2,3];
+    embaralhar(idxs);
+    idxs.forEach((i,idx)=>{
+      var op=q.opcoes[i];
+      var btn=document.createElement("button");
+      btn.className="opcao rel-svg";
+      btn.innerHTML=gerarClockSVG(op.hour,op.min);
+      btn.dataset.correta=(i===q.resposta_correta)?"1":"0";
+      btn.onclick=()=>selecionarOpcao(btn,idx);
+      opcoesDiv.appendChild(btn);
+    });
+    // depois retorna
+    document.getElementById("contadorQuestao").textContent="Questão "+(jogoAtual.questaoAtual+1)+" de "+jogo.perguntas.length;
+    document.getElementById("pontuacaoAtual").textContent=jogoAtual.pontuacao;
+    document.getElementById("feedbackArea").classList.add("oculto");
+    document.getElementById("btnResponder").classList.remove("oculto");
+    document.getElementById("btnProximo").classList.add("oculto");
+    document.getElementById("btnMenu").classList.add("oculto");
+    jogoAtual.questaoRespondida=false;
+    return;
+  }
+  embaralhar(arr);
+  arr.forEach((opt,idx)=>{
+    var btn=document.createElement("button");
+    btn.className="opcao";
+    btn.textContent=opt.texto;
+    btn.dataset.correta=opt.correta?"1":"0";
+    btn.onclick=()=>selecionarOpcao(btn,idx);
+    opcoesDiv.appendChild(btn);
+  });
+  document.getElementById("contadorQuestao").textContent="Questão "+(jogoAtual.questaoAtual+1)+" de "+jogo.perguntas.length;
+  document.getElementById("pontuacaoAtual").textContent=jogoAtual.pontuacao;
+  document.getElementById("feedbackArea").classList.add("oculto");
+  document.getElementById("btnResponder").classList.remove("oculto");
+  document.getElementById("btnProximo").classList.add("oculto");
+  document.getElementById("btnMenu").classList.add("oculto");
+  jogoAtual.questaoRespondida=false;
+  jogoAtual.opcaoSelecionada=null;
+}
+
+// Seleciona opção
+function selecionarOpcao(botao,idx) {
+  if (jogoAtual.questaoRespondida) return;
+  document.querySelectorAll(".opcao").forEach(b=>b.classList.remove("selecionada"));
+  botao.classList.add("selecionada");
+  jogoAtual.opcaoSelecionada=idx;
+}
+
+// Verifica resposta usando data-correta
+function verificarResposta() {
+  if (jogoAtual.questaoRespondida) return;
+  if (jogoAtual.opcaoSelecionada===null) { alert("Selecione uma opção!"); return; }
+  jogoAtual.questaoRespondida=true;
+  var qa = JOGOS[jogoAtual.jogoSelecionado].perguntas[jogoAtual.questaoAtual];
+  document.querySelectorAll(".opcao").forEach((b,i)=>{
+    b.disabled=true;
+    var correta = b.dataset.correta==="1";
+    if (b.classList.contains("selecionada")) {
+      if (correta) {
+        b.classList.add("correta");
+        jogoAtual.pontuacao++;
+        document.getElementById("pontuacaoAtual").textContent=jogoAtual.pontuacao;
+        mostrarFeedback(true);
+      } else {
+        b.classList.add("incorreta");
+        mostrarFeedback(false, correta?"" : (jogoAtual.tipo==="relogio"?"":(qa.resposta_correta||qa.answers[qa.correctIndex])));
+      }
+    } else if (correta) {
+      b.classList.add("correta");
+    }
+  });
+  document.getElementById("btnResponder").classList.add("oculto");
+  document.getElementById("btnProximo").classList.remove("oculto");
+  document.getElementById("btnMenu").classList.remove("oculto");
+}
+
+// Mostra feedback
+function mostrarFeedback(acertou, texto) {
+  var f = document.getElementById("feedbackArea");
+  f.classList.remove("oculto");
+  if (acertou) {
+    f.className="feedback correto";
+    f.textContent="🎉 Resposta correta!";
+  } else {
+    f.className="feedback incorreto";
+    f.textContent="😕 Resposta errada! "+(texto||"");
+  }
+}
+
+// Próxima questão
+function proximaQuestao() {
+  jogoAtual.questaoAtual++;
+  carregarQuestao();
+}
+
+// Reiniciar
+function reiniciarJogo() {
+  location.reload();
+}
+
+// Salvar desempenho
+function salvarDesempenhoAluno(jogoNome,nomeAluno,pontos,total) {
+  var reg={jogo:jogoNome,nome:nomeAluno,pontos:pontos,total:total,data:new Date().toLocaleString()};
+  var lista=JSON.parse(localStorage.getItem("desempenhoAlunos")||"[]");
+  lista.push(reg);
+  localStorage.setItem("desempenhoAlunos",JSON.stringify(lista));
+}
+</script>
+
 
