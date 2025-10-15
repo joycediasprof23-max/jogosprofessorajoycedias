@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🎲 Mega Desafio Educativo profesora joyce</title>
+<title>🎲 Mega Desafio Educativo Integrado</title>
 <style>
 body { font-family:'Comic Sans MS',cursive,Arial,sans-serif; background: radial-gradient(circle at 60% 10%, #b3ecff 30%, #fff9c4 130%); min-height:100vh; margin:0;}
 .container{max-width:950px;margin:24px auto;background:#fffde7;border-radius:25px;box-shadow:0 10px 40px #aed58160;padding:48px 18px 26px;}
@@ -84,6 +84,7 @@ body { font-family:'Comic Sans MS',cursive,Arial,sans-serif; background: radial-
         <button class="btn btn-menu" onclick="voltarMenu()" style="margin-left:10px;margin-top:10px;">Menu jogos</button>
     </div>
 <script>
+// ARRAY DE JOGOS INTEGRADOS (PORTUGUÊS, MATEMÁTICA, EDUCAÇÃO AMBIENTAL, LEITURA HORAS, CURIOSIDADES ANIMAIS)
 const JOGOS = [
 {
     nome: "Português  —  3º Ano",
@@ -132,6 +133,36 @@ const JOGOS = [
         {titulo:"➕ Soma com dois dígitos", pergunta:"Quanto é 12 + 7?", opcoes:["19","17","15","18"], resposta_correta:"19"},
         {titulo:"➖ Desafio final", pergunta:"Quanto é 18 - 9?", opcoes:["9","8","7","10"], resposta_correta:"9"},
     ]
+},
+{
+  nome:"Educação Ambiental",
+  cor:"#2b5d34",
+  perguntas:[
+    {titulo:"🌎 Economia de água", pergunta:"O que devemos fazer para economizar água?", opcoes:["Fechar a torneira ao escovar os dentes", "Deixar a torneira aberta", "Tomar banhos longos", "Lavar o carro todos os dias"], resposta_correta:"Fechar a torneira ao escovar os dentes"},
+    {titulo:"♻️ Reciclagem", pergunta:"Qual é o lixo que pode ser reciclado?", opcoes:["Papel, plástico e vidro", "Restos de comida", "Papel sujo e molhado", "Pneus usados"], resposta_correta:"Papel, plástico e vidro"},
+    {titulo:"🌳 Plantar árvores", pergunta:"Por que devemos plantar árvores?", opcoes:["Porque produzem oxigênio", "Porque fazem barulho", "Porque ocupam espaço", "Porque causam sujeira"], resposta_correta:"Porque produzem oxigênio"},
+    // ... adicione todas as 50 perguntas do jogo de Educação Ambiental aqui no mesmo formato ...
+  ]
+},
+{
+  nome:"Leitura de Horas",
+  cor:"#5145BA",
+  perguntas:[
+    {titulo:"🕐 Hora Fácil", pergunta:"Qual relógio mostra 1:00?", opcoes:["1:00", "12:15", "2:30", "3:45"], resposta_correta:"1:00"},
+    {titulo:"🕑 Hora Fácil", pergunta:"Qual relógio mostra 2:00?", opcoes:["2:00", "3:15", "4:30", "1:00"], resposta_correta:"2:00"},
+    {titulo:"🕒 Hora Fácil", pergunta:"Qual relógio mostra 3:00?", opcoes:["3:00", "2:15", "4:45", "5:30"], resposta_correta:"3:00"},
+    // ... adicione todas as perguntas para níveis fácil, médio e difícil aqui no mesmo formato ...
+  ]
+},
+{
+  nome:"Curiosidades dos Animais",
+  cor:"#2b5d34",
+  perguntas:[
+    {titulo:"Maior animal terrestre", pergunta:"Qual é o maior animal terrestre?", opcoes:["Elefante", "Girafa", "Hipopótamo", "Rinoceronte"], resposta_correta:"Elefante"},
+    {titulo:"Mudança de cor", pergunta:"Qual animal é conhecido por sua capacidade de mudar de cor?", opcoes:["Camaleão", "Polvo", "Papagaio", "Cobra"], resposta_correta:"Camaleão"},
+    {titulo:"Mamífero mais rápido", pergunta:"Qual é o mamífero mais rápido?", opcoes:["Leopardo", "Guepardo", "Cavalo", "Lobo"], resposta_correta:"Guepardo"},
+    // ... insira todas as 50 perguntas curiosas do seu jogo de animais aqui no mesmo formato ...
+  ]
 }
 ];
 
@@ -229,8 +260,9 @@ function verificarResposta() {
     jogoAtual.questaoRespondida = true;
     const opcoes = document.querySelectorAll('.opcao');
     opcoes.forEach((b,i) => {
-        if(i===jogoAtual.opcaoSelecionada) {
-            if(b.textContent===q.resposta_correta) {
+        b.disabled = true;
+        if(i===jogoAtual.opcaoSelecionada){
+            if(b.textContent === q.resposta_correta){
                 b.classList.add('correta');
                 jogoAtual.pontuacao++;
                 document.getElementById('pontuacaoAtual').textContent = jogoAtual.pontuacao;
@@ -239,7 +271,7 @@ function verificarResposta() {
                 b.classList.add('incorreta');
                 mostrarFeedback(false, q.resposta_correta);
             }
-        } else if(b.textContent===q.resposta_correta) {
+        } else if(b.textContent === q.resposta_correta){
             b.classList.add('correta');
         }
     });
@@ -247,21 +279,24 @@ function verificarResposta() {
     document.getElementById('btnProximo').classList.remove('oculto');
     document.getElementById('btnMenu').classList.remove('oculto');
 }
+
 function mostrarFeedback(acertou,respostaCorreta){
-    const feedbackArea=document.getElementById('feedbackArea');
+    const feedbackArea = document.getElementById('feedbackArea');
     feedbackArea.classList.remove('oculto');
     if(acertou){
-        feedbackArea.className='feedback correto';
-        feedbackArea.textContent='🎉 Resposta correta!';
-    }else{
-        feedbackArea.className='feedback incorreto';
-        feedbackArea.textContent='😕 Resposta errada! A resposta correta é: '+respostaCorreta;
+        feedbackArea.className = 'feedback correto';
+        feedbackArea.textContent = '🎉 Resposta correta!';
+    } else {
+        feedbackArea.className = 'feedback incorreto';
+        feedbackArea.textContent = '😕 Resposta errada! A resposta correta é: ' + respostaCorreta;
     }
 }
+
 function proximaQuestao(){
     jogoAtual.questaoAtual++;
     carregarQuestao();
 }
+
 function reiniciarJogo(){location.reload();}
 </script>
 </body>
