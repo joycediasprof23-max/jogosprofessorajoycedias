@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🎲 Mega Desafio Educativo Master</title>
+<style>
+  body { font-family:'Comic Sans MS',cursive,Arial,sans-serif; background: radial-gradient(circle at 60% 10%, #b3ecff 30%, #fff9c4 130%); min-height:100vh; margin:0;}
+  .container{max-width:950px;margin:24px auto;background:#fffde7;border-radius:25px;box-shadow:0 10px 40px #aed58160;padding:48px 18px 26px;}
+  .tela{display:none;}
+  .tela.ativa{display:block;}
+  .titulo-principal{font-size:2.3rem;text-align:center;margin-bottom:18px; color:#6d44b8;letter-spacing:0.01em;}
+  .campo-nome{text-align:center;margin:38px 0 30px;}
+  .campo-nome input{font-size:1.33rem;padding:15px;border-radius:10px;border:2px solid #42a5f5;width:325px;max-width:99%;}
+  .btn-escolher,.btn-iniciar,.btn-voltar,.btn-reiniciar{background:linear-gradient(135deg,#42e695 10%,#3bb2b8 90%);color:#2c2;border:none;border-radius:15px;font-size:1.17rem;padding:17px 38px;margin:14px auto;cursor:pointer;font-weight:bold;box-shadow:0 6px 16px #b2ebf2aa;display:block;max-width:350px;transition:background .27s,transform .2s;letter-spacing:0.03em;}
+  .btn-escolher:hover,.btn-iniciar:hover,.btn-reiniciar:hover,.btn-voltar:hover{background:linear-gradient(135deg,#4aeabb 25%,#4b8cfb 100%);transform:scale(1.04);}
+  .grade-jogos{display:grid;grid-template-columns:repeat(auto-fit,minmax(247px,1fr));gap:24px 16px;margin:44px 0 8px;}
+  .card-jogo{background:linear-gradient(120deg,#dfecfa 60%, #ffe1e1 100%);border:2.4px solid #42a5f5;border-radius:18px;padding:39px 19px 31px;text-align:center;font-size:1.2em;color:#185a6b;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .13s;}
+  .card-jogo:hover{box-shadow:0 11px 35px #42a5f580;transform:scale(1.04);}
+  .header-jogo{margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;background:#e3f2fd;border-radius:15px;padding:17px;}
+  .area-questao{background:#f2fafd;padding:25px 16px;border-radius:18px;margin-bottom:15px;}
+  .titulo-questao{font-size:1.20rem;color:#3e2ab2;}
+  .pergunta{font-size:1.09rem;color:#1d3337;padding:10px 0 5px;}
+  .opcoes-resposta{margin:10px 0;display:grid;gap:12px;}
+  .opcao{background:white;border:2px solid #b2ebf2;border-radius:10px;padding:13px 10px;font-size:1.01rem;color:#1976d2;cursor:pointer;transition:all 0.16s;display:flex;align-items:center;justify-content:center;min-height:44px;}
+  .opcao.rel-svg{padding:5px;}
+  .opcao:hover{border-color:#ab47bc;background:#e1bee7;}
+  .opcao.selecionada{background:#4b8cfb;color:white;border-color:#1976d2;}
+  .opcao.correta{background:#81c784;color:#004d40;border-color:#2e7d32;}
+  .opcao.incorreta{background:#ef5350;color:white;border-color:#c62828;}
+  .area-botoes,.feedback{display:flex;justify-content:center;align-items:center;gap:16px;}
+  .feedback{min-height:34px;margin-bottom:9px;padding:12px 18px;border-radius:12px;font-size:1rem;font-weight:bold;}
+  .feedback.correto{background:#42e695;color:#0e7359;}
+  .feedback.incorreto{background:#ef5350;color:white;}
+  .btn-responder{background:#0288d1; color: white;}
+  .btn-proximo{background:#42e695; color: #226;}
+  .btn-menu{background:#ffd600;color:#457!important;}
+  .btn-reiniciar{background:linear-gradient(90deg,#FFAB91 60%,#EFC24C 100%);color:#226;}
+  .tela-final{margin-top:25px;text-align:center;}
+  .tela-professor{margin-top:30px;}
+  .oculto{display:none!important;}
+  @media (max-width:670px){.container{padding:7px;}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="tela tela-inicial ativa" id="telaInicial">
+    <h1 class="titulo-principal">🎲 Mega Desafio Educativo</h1>
+    <div class="campo-nome">
+      <input type="text" id="nomeJogador" placeholder="Digite seu nome para jogar" maxlength="30"/>
+    </div>
+    <button class="btn-iniciar" onclick="irEscolherJogo()">🎮 Escolher Jogo</button>
+    <button class="btn-iniciar" style="background:#ffab91;color:#543;" onclick="abrirAreaProfessor()">👩‍🏫 Área do Professor</button>
+  </div>
+
+  <div class="tela tela-escolha" id="telaEscolha">
+    <button class="btn-voltar" onclick="voltarInicio()" style="position:absolute;left:22px;">← Voltar</button>
+    <h2 class="titulo-principal" style="color:#1863b2;font-size:2rem;padding-top:10px;">
+      👋 Olá <span id="nomeNaTela">Jogador</span>! Qual desafio você quer jogar?
+    </h2>
+    <div class="grade-jogos" id="gradeJogos"></div>
+  </div>
+
+  <div class="tela tela-jogo" id="telaJogo">
+    <div class="header-jogo">
+      <div>👤 <span id="nomeJogadorJogo">Jogador</span></div>
+      <div id="infoJogo">Super Desafio</div>
+      <div id="contadorQuestao">Questão 1 de 80</div>
+      <div>🏆 <span id="pontuacaoAtual">0</span> pontos</div>
+    </div>
+    <div class="area-questao">
+      <h2 class="titulo-questao" id="tituloQuestao"></h2>
+      <p class="pergunta" id="textoPergunta"></p>
+      <div class="opcoes-resposta" id="opcoesResposta"></div>
+    </div>
+    <div class="feedback oculto" id="feedbackArea"></div>
+    <div class="area-botoes">
+      <button class="btn btn-responder" onclick="verificarResposta()" id="btnResponder">✅ Responder</button>
+      <button class="btn btn-proximo oculto" onclick="proximaQuestao()" id="btnProximo">➡️ Próxima Questão</button>
+      <button class="btn btn-menu oculto" onclick="voltarMenu()" id="btnMenu">Menu jogos</button>
+    </div>
+  </div>
+
+  <div class="tela tela-final" id="telaFinal">
+    <h1 class="titulo-principal">🎉 PARABÉNS! 🎉</h1>
+    <div style="margin:15px 0;font-size:1.11rem;">
+      Você completou o desafio! <br />
+      <strong>🏆 <span id="pontuacaoFinal"></span> de <span id="totalQuestoes"></span></strong> pontos.
+    </div>
+    <button class="btn-reiniciar" onclick="reiniciarJogo()">🔄 Jogar Novamente</button>
+    <button class="btn btn-menu" onclick="voltarMenu()" style="margin-left:10px;margin-top:10px;">Menu jogos</button>
+  </div>
+
+  <div class="tela tela-professor" id="telaProfessor" style="display:none;">
+    <h2 class="titulo-principal">👩‍🏫 Área do Professor</h2>
+    <p>Aqui você vê os resultados dos alunos neste dispositivo.</p>
+    <table id="tabelaDesempenho" border="1" style="width:97%;margin:auto;background:#fff;">
+      <thead>
+        <tr>
+          <th>Jogo</th>
+          <th>Aluno</th>
+          <th>Pontos</th>
+          <th>Total</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="voltarInicio()" class="btn-voltar">Voltar ao menu</button>
+    <button onclick="limparDesempenho()" class="btn-reiniciar" style="background:#d32f2f;">Limpar resultados</button>
+  </div>
+</div>
+
+<script>
+// Função para gerar SVG de relógio com números de 1 a 12
+function gerarClockSVG(hours, minutes) {
+  var angleHours = ((hours % 12) + minutes / 60) * 30 - 90;
+  var angleMinutes = minutes * 6 - 90;
+  var hourX = 50 + 24 * Math.cos((angleHours * Math.PI) / 180);
+  var hourY = 50 + 24 * Math.sin((angleHours * Math.PI) / 180);
+  var minX = 50 + 38 * Math.cos((angleMinutes * Math.PI) / 180);
+  var minY = 50 + 38 * Math.sin((angleMinutes * Math.PI) / 180);
+
+  var numbersSVG = "";
+  for (var n = 1; n <= 12; n++) {
+    var angle = n * 30 - 90;
+    var x = 50 + 40 * Math.cos((angle * Math.PI) / 180);
+    var y = 53 + 40 * Math.sin((angle * Math.PI) / 180);
+    numbersSVG += "<text x='" + x + "' y='" + y + "' text-anchor='middle' font-size='12' fill='#555' font-weight='bold'>" + n + "</text>";
+  }
+
+  return "<svg class='clock-svg' width='80' height='80' viewBox='0 0 100 100' aria-label='Relógio mostrando " + hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + "'>" +
+         "<circle cx='50' cy='50' r='45' fill='#fff' stroke='#8b89b0' stroke-width='4'/>" +
+         numbersSVG +
+         "<line x1='50' y1='50' x2='" + hourX + "' y2='" + hourY + "' stroke='#2c2c76' stroke-width='6' stroke-linecap='round'/>" +
+         "<line x1='50' y1='50' x2='" + minX + "' y2='" + minY + "' stroke='#F24949' stroke-width='3.5' stroke-linecap='round'/>" +
+         "<circle cx='50' cy='50' r='5' fill='#9492ea' />" +
+         "</svg>";
+}
+
+// Todos os jogos com suas questões completas
+var JOGOS = [
+  {
+    nome: "Português - 3º Ano",
+    cor: "#7e57c2",
+    perguntas: [
+      {titulo:"🔤 Ordem das Palavras", pergunta:"Qual palavra vem PRIMEIRO na ordem alfabética?", opcoes:["BOLA","CASA","DADO","GATO"], resposta_correta:"BOLA"},
+      {titulo:"🔡 Letras", pergunta:"Quantas letras tem a palavra elefante?", opcoes:["7 letras","8 letras","9 letras","10 letras"], resposta_correta:"8 letras"},
+      {titulo:"🔠 Maiúsculas e minúsculas", pergunta:"Como fica a palavra caderno toda em maiúsculas?", opcoes:["CADERNO","caderno","Caderno","CADerno"], resposta_correta:"CADERNO"},
+      {titulo:"🔠 Letra inicial", pergunta:"Com que letra começa a palavra girafa?", opcoes:["G","J","R","F"], resposta_correta:"G"},
+      {titulo:"🔠 Vogais", pergunta:"Qual dessas é uma vogal?", opcoes:["B","E","G","Y"], resposta_correta:"E"},
+      {titulo:"🔤 Ordem", pergunta:"Qual palavra vem DEPOIS de bola no alfabeto?", opcoes:["CASA","DADO","ARCO","GATO"], resposta_correta:"CASA"},
+      {titulo:"🔠 Final letra", pergunta:"Qual letra termina a palavra flor?", opcoes:["L","R","O","F"], resposta_correta:"R"},
+      {titulo:"🔤 Quantas letras", pergunta:"Quantas letras tem a palavra banana?", opcoes:["4","5","6","7"], resposta_correta:"6"},
+      {titulo:"🔡 Letra escondida", pergunta:"Qual letra está faltando? B_NANA", opcoes:["A","R","N","E"], resposta_correta:"A"},
+      {titulo:"🔠 Primeira letra", pergunta:"Qual a primeira letra da palavra quadro?", opcoes:["Q","O","C","U"], resposta_correta:"Q"},
+      {titulo:"✂️ Separação silábica", pergunta:"Separe em sílabas: sapato", opcoes:["sa-pa-to","sap-ato","sapa-to","s-apato"], resposta_correta:"sa-pa-to"},
+      {titulo:"✂️ Som inicial", pergunta:"Qual som inicial tem a palavra bicicleta?", opcoes:["bi","ba","be","bo"], resposta_correta:"bi"},
+      {titulo:"✂️ Contando sílabas", pergunta:"Quantas sílabas tem mesa?", opcoes:["1","2","3","4"], resposta_correta:"2"},
+      {titulo:"✂️ Palavra com sílaba LA", pergunta:"Qual delas tem a sílaba LA?", opcoes:["LATA","MESA","SAPATO","LOUSA"], resposta_correta:"LATA"},
+      {titulo:"✂️ Som final", pergunta:"Qual sílaba final de pipoca?", opcoes:["ca","co","po","pi"], resposta_correta:"ca"},
+      {titulo:"✂️ Rimas", pergunta:"Qual palavra rima com bola?", opcoes:["cama","cola","mesa","batata"], resposta_correta:"cola"},
+      {titulo:"✂️ Quantas sílabas", pergunta:"Quantas sílabas tem caderno?", opcoes:["2","3","4","5"], resposta_correta:"3"},
+      {titulo:"✂️ Sílabas invertidas", pergunta:"Qual destas tem sílabas invertidas? (Ex: RO-SA para SA-RO)", opcoes:["SALMO","SORO","LABO","SORSA"], resposta_correta:"BOLA"},
+      {titulo:"✂️ Palavras com MA", pergunta:"Qual dessas palavras contém a sílaba MI?", opcoes:["CAMISA","QUILO","TAPA","LOUSA"], resposta_correta:"CAMISA"},
+      {titulo:"✂️ Última sílaba", pergunta:"Última sílaba de menina?", opcoes:["ni","na","me","ne"], resposta_correta:"na"},
+      {titulo:"📝 Troca letras", pergunta:"Qual a escrita correta?", opcoes:["ajunda","ajuda","ajoda","ajuda"], resposta_correta:"ajuda"},
+      {titulo:"📝 Som das letras", pergunta:"Qual dessas é escrita corretamente?", opcoes:["excola","escoola","escola","iscoola"], resposta_correta:"escola"},
+      {titulo:"📝 Faltou letra", pergunta:"Complete a palavra: _eia", opcoes:["M","B","P","C"], resposta_correta:"M"},
+      {titulo:"📝 Som semelhante", pergunta:"Qual das opções tem o mesmo som de carro?", opcoes:["barro","gato","cama","pato"], resposta_correta:"barro"},
+      {titulo:"📝 Escreva certo", pergunta:"Escolha a palavra escrita corretamente", opcoes:["sapeço","sapato","sapoto","sapate"], resposta_correta:"sapato"},
+      {titulo:"📝 Uso de LH", pergunta:"Qual dessas tem LH?", opcoes:["trabalho","bolha","bilhete","telefone"], resposta_correta:"bilhete"},
+      {titulo:"📝 Palavras com CH", pergunta:"Qual delas tem CH?", opcoes:["abacaxi","cachorro","bambu","batata"], resposta_correta:"cachorro"},
+      {titulo:"📝 Palavras com QU", pergunta:"Qual destas tem QU?", opcoes:["quadro","carro","mesa","gato"], resposta_correta:"quadro"},
+      {titulo:"📝 Som de SS", pergunta:"Qual dessas tem SS?", opcoes:["passar","vermelho","escada","melancia"], resposta_correta:"passar"},
+      {titulo:"📝 Letra trocada", pergunta:"Qual está SEM erro?", opcoes:["cabeca","cabeça","cabeca","cabesa"], resposta_correta:"cabeça"},
+      {titulo:"🏷️ Artigo", pergunta:"Qual destas é um artigo?", opcoes:["O","Cachorro","Bonito","Rápido"], resposta_correta:"O"},
+      {titulo:"🏷️ Substantivo", pergunta:"Escolha o substantivo", opcoes:["mesa","bonito","corre","rápido"], resposta_correta:"mesa"},
+      {titulo:"🏷️ Adjetivo", pergunta:"Qual destas é um adjetivo?", opcoes:["feliz","copo","menino","banana"], resposta_correta:"feliz"},
+      {titulo:"🏷️ Verbo", pergunta:"Qual palavra é um verbo?", opcoes:["comer","bola","triste","azul"], resposta_correta:"comer"},
+      {titulo:"🏷️ Substantivo comum", pergunta:"Qual dessas é um substantivo comum?", opcoes:["gato","Gato","gato","GAto"], resposta_correta:"gato"},
+      {titulo:"🏷️ Substantivo próprio", pergunta:"Qual é o substantivo próprio?", opcoes:["Brasil","bola","feliz","corre"], resposta_correta:"Brasil"},
+      {titulo:"🏷️ Adjetivo", pergunta:"Qual destas é um adjetivo?", opcoes:["verde","mesa","pato","talher"], resposta_correta:"verde"},
+      {titulo:"🏷️ Verbo", pergunta:"Qual destas é um verbo?", opcoes:["correr","carro","amarelo","caneca"], resposta_correta:"correr"},
+      {titulo:"🏷️ Artigo feminino", pergunta:"Qual destas é artigo feminino?", opcoes:["A","O","UM","POR"], resposta_correta:"A"},
+      {titulo:"🏷️ Substantivo coletivo de pássaros", pergunta:"Como se chama grupo de pássaros?", opcoes:["bando","rebanho","manada","cardume"], resposta_correta:"bando"},
+      {titulo:"📖 Texto curto", pergunta:"O sol apareceu no céu e todos foram brincar lá fora. O que motivou as crianças a brincar fora?", opcoes:["Chuva","Sol","Vento","Neve"], resposta_correta:"Sol"},
+      {titulo:"📖 Personagem principal", pergunta:"No texto: Lucas correu para o parque. Quem é o personagem principal?", opcoes:["Lucas","Parque","Menino","Cachorro"], resposta_correta:"Lucas"},
+      {titulo:"📖 Local", pergunta:"No texto: Ana foi à escola feliz. Onde Ana foi?", opcoes:["Praça","Escola","Casa","Loja"], resposta_correta:"Escola"},
+      {titulo:"📖 Ação", pergunta:"No texto: Maria desenhou uma flor. O que Maria fez?", opcoes:["Cantou","Desenhou","Pulou","Dançou"], resposta_correta:"Desenhou"},
+      {titulo:"📖 Sentimento", pergunta:"No texto: Pedro estava contente. Como Pedro estava?", opcoes:["Triste","Bravo","Contente","Com sono"], resposta_correta:"Contente"},
+      {titulo:"📖 O que aconteceu?", pergunta:"No texto: A bola caiu no jardim. Onde caiu a bola?", opcoes:["No telhado","No jardim","Na rua","Na escola"], resposta_correta:"No jardim"},
+      {titulo:"📖 Final", pergunta:"No texto: Joana correu, chegou em casa e dormiu. O que Joana fez depois de chegar?", opcoes:["Dormiu","Estudou","Brincou","Comeu"], resposta_correta:"Dormiu"},
+      {titulo:"📖 Escolha", pergunta:"No texto: Henrique leu um livro. O que Henrique leu?", opcoes:["Jornal","Livro","Revista","Carta"], resposta_correta:"Livro"},
+      {titulo:"📖 Motivo", pergunta:"No texto: Ela usou guarda-chuva, pois estava chovendo. Por que usou guarda-chuva?", opcoes:["Sol","Chuva","Vento","Neve"], resposta_correta:"Chuva"},
+      {titulo:"📖 Informação", pergunta:"No texto: O cachorro pulou o muro alto. O que o cachorro fez?", opcoes:["Pulou o muro","Desenhou o muro","Subiu no telhado","Entrou na casa"], resposta_correta:"Pulou o muro"},
+      {titulo:"❓ Pontuação final", pergunta:"Qual sinal de pontuação termina a frase: Hoje está quente __", opcoes:["?","!",";",","], resposta_correta:"!"},
+      {titulo:"❓ Pergunta", pergunta:"Qual sinal usamos para perguntas?", opcoes:[".",",","?","!"], resposta_correta:"?"},
+      {titulo:"❓ Vírgula", pergunta:"Indique a frase com vírgula:", opcoes:["João, Maria e Lucas.","João Maria Lucas.","João Maria Lucas!","João Maria Lucas?"], resposta_correta:"João, Maria e Lucas."},
+      {titulo:"❓ Pontuação", pergunta:"Onde está o ponto final?", opcoes:["Olá.","Olá","Olá!","Olá,"], resposta_correta:"Olá."},
+      {titulo:"❓ Exclamação", pergunta:"Assinale a frase com exclamação:", opcoes:["Bom dia!","Bom dia.","Bom dia?","Bom dia,"], resposta_correta:"Bom dia!"},
+      {titulo:"❓ Dois-pontos", pergunta:"Qual frase usa dois-pontos?", opcoes:["Ele disse: Olá!","Ele disse Olá!","Ele disse Olá.","Ele disse Olá?"], resposta_correta:"Ele disse: Olá!"},
+      {titulo:"❓ Aspas", pergunta:"Qual frase usa aspas?", opcoes:["Ela disse: 'Oi!'","Ela disse Oi!","Ela disse, Oi!","Ela disse Oi?"], resposta_correta:"Ela disse: 'Oi!'"},
+      {titulo:"❓ Vírgula separa", pergunta:"Em qual opção há vírgula separando palavras?", opcoes:["Maçã, pera e uva.","Maçã pera e uva.","Maçã pera uva.","Maçã pera e uva"], resposta_correta:"Maçã, pera e uva."},
+      {titulo:"❓ Pontuação no final", pergunta:"Complete: Vamos brincar___", opcoes:[".","!","?",";"], resposta_correta:"!"},
+      {titulo:"❓ Sinal correto", pergunta:"Qual frase mostra surpresa?", opcoes:["Que legal!","Que legal.","Que legal?","Que legal,"], resposta_correta:"Que legal!"},
+      {titulo:"😊 Sinônimo de feliz", pergunta:"Escolha o sinônimo de FELIZ:", opcoes:["Alegre","Triste","Bravo","Cansado"], resposta_correta:"Alegre"},
+      {titulo:"😊 Antônimo de grande", pergunta:"Qual é antônimo de GRANDE?", opcoes:["Pequeno","Médio","Alto","Largo"], resposta_correta:"Pequeno"},
+      {titulo:"😊 Sinônimo de rápido", pergunta:"Escolha o sinônimo de RÁPIDO:", opcoes:["Veloz","Devagar","Lento","Parado"], resposta_correta:"Veloz"},
+      {titulo:"😊 Antônimo de bonito", pergunta:"Qual antônimo de BONITO?", opcoes:["Feio","Alegre","Alto","Baixo"], resposta_correta:"Feio"},
+      {titulo:"😊 Sinônimo de criança", pergunta:"Escolha o sinônimo de CRIANÇA:", opcoes:["Menino","Menina","Pessoa","Adulto"], resposta_correta:"Menino"},
+      {titulo:"😊 Antônimo de quente", pergunta:"Qual antônimo de QUENTE?", opcoes:["Frio","Morno","Gelado","Seco"], resposta_correta:"Frio"},
+      {titulo:"😊 Sinônimo de pequeno", pergunta:"Escolha o sinônimo de PEQUENO:", opcoes:["Mínimo","Grande","Longo","Rápido"], resposta_correta:"Mínimo"},
+      {titulo:"😊 Antônimo de claro", pergunta:"Qual antônimo de CLARO?", opcoes:["Escuro","Fraco","Alto","Baixo"], resposta_correta:"Escuro"},
+      {titulo:"😊 Sinônimo de cansado", pergunta:"Escolha o sinônimo de CANSADO:", opcoes:["Exausto","Animado","Forte","Descansado"], resposta_correta:"Exausto"},
+      {titulo:"😊 Antônimo de jovem", pergunta:"Qual antônimo de JOVEM?", opcoes:["Velho","Novo","Alto","Pequeno"], resposta_correta:"Velho"},
+      {titulo:"📚 Produção de lista", pergunta:"Assinale a opção que corresponde a uma lista de frutas:", opcoes:["Maçã, banana e uva","Correr, brincar, pular","Caneta, lápis, borracha","Amor, coragem, esperança"], resposta_correta:"Maçã, banana e uva"},
+      {titulo:"📚 História curta", pergunta:"Qual começa uma história?", opcoes:["Era uma vez...","Comprei pão","Bonito dia","Acordei cedo"], resposta_correta:"Era uma vez..."},
+      {titulo:"📚 Final de carta", pergunta:"Como você pode finalizar uma carta?", opcoes:["Com carinho","Era uma vez...","Comecei agora","Muito claro"], resposta_correta:"Com carinho"},
+      {titulo:"📚 Personagem no texto", pergunta:"Qual opção mostra personagens?", opcoes:["João e Maria","Amigo e vizinho","Sol e chuva","Forte e fraco"], resposta_correta:"João e Maria"},
+      {titulo:"📚 Tema de bilhete", pergunta:"Qual bilhete é para lembrar algo?", opcoes:["Não esqueça seu livro.","Cachorro bonito.","Vento frio hoje.","Gosto de chocolate."], resposta_correta:"Não esqueça seu livro."},
+      {titulo:"📚 Frase", pergunta:"Qual é uma frase?", opcoes:["O gato dormiu.","Dormiu gato.","Dormiu.","Gato."], resposta_correta:"O gato dormiu."},
+      {titulo:"📚 Cartão de aniversário", pergunta:"O que escrever em cartão de aniversário?", opcoes:["Parabéns!","Boa viagem!","Boa noite!","Até logo!"], resposta_correta:"Parabéns!"},
+      {titulo:"📚 Descrição", pergunta:"Qual frase descreve uma bola?", opcoes:["A bola é redonda.","A bola come.","A bola dorme.","A bola ensina."], resposta_correta:"A bola é redonda."},
+      {titulo:"📚 Notícia", pergunta:"Qual é notícia?", opcoes:["Hoje chove forte na cidade.","A casa está bonita.","Tenho caneta.","Comprei frutas."], resposta_correta:"Hoje chove forte na cidade."},
+      {titulo:"📚 Começo de conto", pergunta:"Qual começa um conto?", opcoes:["Era uma vez...","Muito calor.","Belo desenho.","Gostei do lanche."], resposta_correta:"Era uma vez..."},
+      {titulo:"📝 Palavras com R", pergunta:"Qual palavra tem R no meio?", opcoes:["PORTA","BOCA","MESA","CAMA"], resposta_correta:"PORTA"},
+      {titulo:"🔤 Alfabeto", pergunta:"Quantas letras tem o alfabeto?", opcoes:["24","25","26","27"], resposta_correta:"26"},
+      {titulo:"📖 Compreensão", pergunta:"João comeu uma maçã. O que João fez?", opcoes:["Comeu","Bebeu","Dormiu","Correu"], resposta_correta:"Comeu"},
+      {titulo:"✂️ Divisão silábica", pergunta:"Como separar: ESCOLA?", opcoes:["ES-CO-LA","ESC-OLA","E-SCOLA","ESCO-LA"], resposta_correta:"ES-CO-LA"},
+      {titulo:"🏷️ Classes", pergunta:"BONITA é um:", opcoes:["Adjetivo","Substantivo","Verbo","Artigo"], resposta_correta:"Adjetivo"},
+      {titulo:"📝 Escrita", pergunta:"Qual palavra está correta?", opcoes:["PROFESSORA","PROFESORA","PROFECORA","PROFESORA"], resposta_correta:"PROFESSORA"},
+      {titulo:"❓ Pontuação", pergunta:"Como você está___", opcoes:["?","!",".",","], resposta_correta:"?"},
+      {titulo:"😊 Palavras", pergunta:"ALTO é antônimo de:", opcoes:["BAIXO","GRANDE","FORTE","RÁPIDO"], resposta_correta:"BAIXO"},
+      {titulo:"📚 Texto", pergunta:"O que é um parágrafo?", opcoes:["Conjunto de frases","Uma palavra","Uma letra","Um sinal"], resposta_correta:"Conjunto de frases"},
+      {titulo:"🔠 Letras finais", pergunta:"Qual palavra termina com S?", opcoes:["LIVROS","CADERNO","ESCOLA","MENINA"], resposta_correta:"LIVROS"}
+    ],
+    tipo: "default"
+  },
+  {
+    nome: "Educação Ambiental",
+    cor: "#2b5d34",
+    perguntas: [
+      {question:"O que devemos fazer para economizar água?", answers:["Fechar a torneira ao escovar os dentes","Deixar a torneira aberta","Tomar banhos longos","Lavar o carro todos os dias"], correctIndex:0},
+      {question:"Qual é o lixo que pode ser reciclado?", answers:["Papel, plástico e vidro","Restos de comida","Papel sujo e molhado","Pneus usados"], correctIndex:0},
+      {question:"Por que devemos plantar árvores?", answers:["Porque produzem oxigênio","Porque fazem barulho","Porque ocupam espaço","Porque causam sujeira"], correctIndex:0},
+      {question:"Qual destes é um animal que ajuda a polinizar as plantas?", answers:["Abelha","Cachorro","Pombo","Leão"], correctIndex:0},
+      {question:"O que é lixo orgânico?", answers:["Restos de comida e plantas","Plástico e metal","Papel e vidro","Lixo radioativo"], correctIndex:0},
+      {question:"Para conservar a natureza, devemos:", answers:["Não jogar lixo no chão","Queimar lixo na rua","Desmatar florestas","Poluir rios"], correctIndex:0},
+      {question:"Qual dessas fontes de energia é renovável?", answers:["Energia solar","Carvão","Petróleo","Gás natural"], correctIndex:0},
+      {question:"O que é biodiversidade?", answers:["Variedade de plantas e animais","Só plantas","Só animais","Quantidades de lixo"], correctIndex:0},
+      {question:"Qual é a importância da reciclagem?", answers:["Reduzir lixo no meio ambiente","Aumentar o lixo","Poluir o solo","Destruir florestas"], correctIndex:0},
+      {question:"Por que não devemos desperdiçar energia elétrica?", answers:["Para preservar recursos naturais","Para gastar mais dinheiro","Porque é engraçado","Porque fica escuro"], correctIndex:0},
+      {question:"O que é coleta seletiva?", answers:["Separar lixo para reciclagem","Jogar tudo no mesmo saco","Queimar lixo","Descartar no rio"], correctIndex:0},
+      {question:"Qual destes protege o meio ambiente?", answers:["Reciclar","Queimar lixo","Poluir rios","Desmatar"], correctIndex:0},
+      {question:"Qual o principal responsável pelo desmatamento?", answers:["Ser humano","Vento","Animais","Chuva"], correctIndex:0},
+      {question:"Qual destas atitudes ajuda o planeta?", answers:["Apagar a luz ao sair","Deixar luz acesa","Jogar lixo na rua","Gastar água"], correctIndex:0},
+      {question:"O que devemos fazer com pilhas usadas?", answers:["Levar em posto de coleta","Jogar no lixo comum","Enterrar","Descartar no vaso"], correctIndex:0},
+      {question:"Qual é a importância das abelhas?", answers:["Polinizam plantas","Decompõem lixo","Produzem gás carbônico","Comem folhas"], correctIndex:0},
+      {question:"Por que não devemos queimar lixo?", answers:["Polui o ar","Perfuma o ambiente","Ajuda as plantas","Atrai pássaros"], correctIndex:0},
+      {question:"Qual destas é uma atitude sustentável?", answers:["Usar ecobag nas compras","Usar sacola plástica","Jogar lixo no chão","Desmatar"], correctIndex:0},
+      {question:"O que evita enchentes nas cidades?", answers:["Não jogar lixo nos bueiros","Desmatar margens dos rios","Construir em áreas de risco","Poluir rios"], correctIndex:0},
+      {question:"Qual é o ciclo da água?", answers:["Evaporação, condensação e precipitação","Desmatamento e poluição","Transporte e armazenamento","Consumo e descarte"], correctIndex:0},
+      {question:"O que podemos fazer para manter rios limpos?", answers:["Não jogar lixo nas águas","Lavar carros no rio","Jogar óleo no rio","Construir sobre rios"], correctIndex:0},
+      {question:"O que é sustentabilidade?", answers:["Usar recursos sem prejudicar o futuro","Gastar tudo rápido","Desperdiçar água","Poluir o meio ambiente"], correctIndex:0},
+      {question:"Qual animal está ameaçado pelo desmatamento?", answers:["Onça-pintada","Cachorro","Gato","Vaca"], correctIndex:0},
+      {question:"Por que devemos proteger as florestas?", answers:["Produzem oxigênio, água e abrigo","Para fazer queimadas","Para construir rodovias","Porque ocupam espaço"], correctIndex:0},
+      {question:"Qual destes materiais leva mais tempo para se decompor?", answers:["Plástico","Papel","Fruta","Folha"], correctIndex:0},
+      {question:"Qual o principal efeito do aquecimento global?", answers:["Mudanças climáticas","Mais flores","Menos lixo","Água limpa"], correctIndex:0},
+      {question:"O que significa poluir?", answers:["Contaminar o ambiente","Cuidar das plantas","Reciclar materiais","Economizar água"], correctIndex:0},
+      {question:"O que podemos fazer com óleo de cozinha usado?", answers:["Levar em posto de coleta","Jogar na pia","Jogar na terra","Colocar no lixo seco"], correctIndex:0},
+      {question:"O que devemos fazer ao visitar ambientes naturais?", answers:["Respeitar a natureza","Jogar lixo no chão","Acender fogueiras","Quebrar plantas"], correctIndex:0},
+      {question:"Por que não devemos cortar árvores sem permissão?", answers:["Podem ser fundamentais ao equilíbrio ambiental","Para fazer móveis","Para abrir espaço","Para vender madeira"], correctIndex:0},
+      {question:"Como ajudar animais domésticos?", answers:["Cuidando, vacinando e alimentando","Soltando na rua","Jogando lixo na casa","Pintando os animais"], correctIndex:0},
+      {question:"O que é lixo eletrônico?", answers:["Pilhas, baterias, celulares e computadores velhos","Frutas","Restos de comida","Plantas"], correctIndex:0},
+      {question:"Como contribuir para a melhoria do ar?", answers:["Plantar árvores","Queimar lixo","Poluir rios","Jogar lixo em terrenos"], correctIndex:0},
+      {question:"Por que reciclar papel é importante?", answers:["Diminui o corte de árvores","Polui rios","Gera fumaça","Aumenta o lixo"], correctIndex:0},
+      {question:"Qual recurso é finito e precisa ser economizado?", answers:["Água","Vento","Luz solar","Areia"], correctIndex:0},
+      {question:"O que o desmatamento pode causar?", answers:["Enchentes e extinção de espécies","Mais sombra","Mais flores","Chuva"], correctIndex:0},
+      {question:"Por que devemos separar o lixo?", answers:["Facilita a reciclagem","Deixa bonito","Perfuma a casa","Combina cores"], correctIndex:0},
+      {question:"O que acontece se jogarmos pilhas no lixo comum?", answers:["Contamina o solo e a água","Nada","Elas reciclam sozinhas","Virarão árvores"], correctIndex:0},
+      {question:"Como devemos cuidar das praças públicas?", answers:["Não jogar lixo nelas","Plantar lixo","Queimar árvores","Arrancar flores"], correctIndex:0},
+      {question:"O que são espécies ameaçadas?", answers:["Animais ou plantas em risco de extinção","Espécies abundantes","Espécies de supermercado","Espécies marítimas"], correctIndex:0},
+      {question:"Por que devemos economizar papel?", answers:["Salvar árvores e água","Fazer mais lixo","Poluir o solo","Produzir fumaça"], correctIndex:0},
+      {question:"O que fazer com resíduos de poda do jardim?", answers:["Transformar em adubo","Colocar no lixo comum","Enterrar com plásticos","Jogar em bueiros"], correctIndex:0},
+      {question:"Qual destas atitudes protege a fauna?", answers:["Não capturar animais silvestres","Acender fogueiras","Jogar lixo no mato","Arrancar flores"], correctIndex:0},
+      {question:"Qual destas ações diminui o lixo?", answers:["Reutilizar objetos","Usar tudo descartável","Comprar muito plástico","Descartar tudo"], correctIndex:0},
+      {question:"O que é compostagem?", answers:["Transformar restos orgânicos em adubo","Misturar lixo","Queimar folhas","Jogar resíduos no rio"], correctIndex:0},
+      {question:"Como evitar a poluição da água?", answers:["Descarte correto de resíduos","Jogar lixo nos rios","Lavar carro no rio","Deixar torneira aberta"], correctIndex:0},
+      {question:"O que é uma nascente?", answers:["Onde nasce um rio","Um tipo de árvore","Um animal marinho","Um inseto"], correctIndex:0},
+      {question:"Qual destes produtos prejudica o meio ambiente?", answers:["Plástico descartável","Folhas secas","Água da chuva","Pedras"], correctIndex:0},
+      {question:"O que é ecoturismo?", answers:["Turismo que respeita a natureza","Passeios de carro","Visitas a shoppings","Festas em áreas urbanas"], correctIndex:0},
+      {question:"Como você pode ajudar o planeta?", answers:["Economizando água e energia","Jogando lixo na rua","Desmatando","Gastando sem pensar"], correctIndex:0},
+      {question:"Qual é a função das raízes das plantas?", answers:["Absorver água e nutrientes","Produzir flores","Fazer sombra","Atrair insetos"], correctIndex:0},
+      {question:"O que são recursos renováveis?", answers:["Recursos que não se esgotam","Recursos caros","Recursos raros","Recursos sintéticos"], correctIndex:0},
+      {question:"Qual gás as plantas absorvem do ar?", answers:["Gás carbônico","Oxigênio","Hidrogênio","Nitrogênio"], correctIndex:0},
+      {question:"O que devemos fazer com garrafas PET?", answers:["Reciclar","Queimar","Enterrar","Jogar no rio"], correctIndex:0},
+      {question:"Qual é o habitat natural dos peixes?", answers:["Água","Terra","Ar","Árvores"], correctIndex:0},
+      {question:"Por que as florestas são importantes?", answers:["Produzem oxigênio","Ocupam espaço","Causam problemas","São feias"], correctIndex:0},
+      {question:"O que acontece se cortarmos todas as árvores?", answers:["Falta de oxigênio","Mais espaço","Menos problemas","Mais dinheiro"], correctIndex:0},
+      {question:"Qual animal ajuda a espalhar sementes?", answers:["Pássaros","Peixes","Cobras","Insetos"], correctIndex:0},
+      {question:"O que é poluição sonora?", answers:["Excesso de ruído","Falta de som","Som bonito","Música alta"], correctIndex:0},
+      {question:"Como podemos economizar energia em casa?", answers:["Desligar aparelhos sem uso","Deixar tudo ligado","Usar mais aparelhos","Não se preocupar"], correctIndex:0},
+      {question:"Qual é a importância das minhocas no solo?", answers:["Arejam e fertilizam a terra","Comem plantas","Fazem buracos","Causam doenças"], correctIndex:0},
+      {question:"O que causa a poluição do ar?", answers:["Fumaça de carros e fábricas","Plantas","Chuva","Vento"], correctIndex:0},
+      {question:"Por que devemos cuidar dos oceanos?", answers:["São habitat de muitos animais","São apenas água","Não são importantes","São sujos"], correctIndex:0},
+      {question:"O que é agricultura orgânica?", answers:["Cultivo sem agrotóxicos","Cultivo com muito veneno","Cultivo em estufas","Cultivo industrial"], correctIndex:0},
+      {question:"Qual é o efeito do lixo nos oceanos?", answers:["Mata animais marinhos","Limpa a água","Alimenta peixes","Não faz mal"], correctIndex:0},
+      {question:"O que são animais em extinção?", answers:["Espécies que podem desaparecer","Animais comuns","Animais domésticos","Animais grandes"], correctIndex:0},
+      {question:"Como a poluição afeta nossa saúde?", answers:["Causa doenças respiratórias","Não afeta","Melhora a saúde","Não tem relação"], correctIndex:0},
+      {question:"O que é reflorestamento?", answers:["Plantar árvores em áreas desmatadas","Cortar árvores","Queimar florestas","Vender madeira"], correctIndex:0},
+      {question:"Por que devemos proteger os animais?", answers:["Mantêm o equilíbrio da natureza","Não são importantes","Causam problemas","São perigosos"], correctIndex:0},
+      {question:"O que é desenvolvimento sustentável?", answers:["Crescer sem destruir a natureza","Crescer rapidamente","Não se desenvolver","Poluir para crescer"], correctIndex:0},
+      {question:"Qual a importância das abelhas para o meio ambiente?", answers:["Polinização das plantas","Produzem mel apenas","Fazem barulho","Não são importantes"], correctIndex:0},
+      {question:"O que devemos fazer com resto de medicamentos?", answers:["Levar à farmácia","Jogar no lixo comum","Jogar na pia","Guardar sempre"], correctIndex:0},
+      {question:"Por que é importante preservar a água?", answers:["É essencial para a vida","É abundante","Não é necessária","Podemos criar"], correctIndex:0},
+      {question:"O que causa o aquecimento global?", answers:["Excesso de gases poluentes","Frio demais","Falta de sol","Muita chuva"], correctIndex:0},
+      {question:"Como podemos ajudar os animais abandonados?", answers:["Adoção responsável","Ignorar","Soltar na rua","Dar comida apenas"], correctIndex:0},
+      {question:"O que são energias limpas?", answers:["Energias que não poluem","Energias caras","Energias raras","Energias perigosas"], correctIndex:0},
+      {question:"Por que devemos usar menos plástico?", answers:["Demora muito para se decompor","É caro","É feio","Não há motivo"], correctIndex:0},
+      {question:"O que é erosão do solo?", answers:["Desgaste da terra","Melhoria da terra","Fertilização","Plantio"], correctIndex:0},
+      {question:"Como as plantas ajudam o meio ambiente?", answers:["Purificam o ar","Sujam o ambiente","Ocupam espaço","Causam problemas"], correctIndex:0},
+      {question:"O que devemos ensinar às crianças sobre meio ambiente?", answers:["Respeitar e cuidar da natureza","Não é importante","Poluir é normal","Natureza não importa"], correctIndex:0},
+      {question:"Qual é a melhor forma de economizar água no banho?", answers:["Tomar banhos mais rápidos","Deixar o chuveiro ligado","Usar mais sabonete","Tomar vários banhos por dia"], correctIndex:0},
+      {question:"O que fazemos com latas de alumínio?", answers:["Reciclar","Queimar","Enterrar","Jogar no mar"], correctIndex:0},
+      {question:"Por que devemos cuidar das plantas?", answers:["Elas nos dão oxigênio","Elas fazem barulho","Elas sujam o ambiente","Elas não servem para nada"], correctIndex:0},
+      {question:"Qual é o melhor destino para restos de comida?", answers:["Compostagem","Lixo comum","Queimar","Rio"], correctIndex:0}
+    ],
+    tipo: "ambiental"
+  },
+  {
+    nome: "Curiosidades dos Animais",
+    cor: "#2b5d34", 
+    perguntas: [
+      {question:"Qual é o maior animal terrestre?", answers:["Elefante","Girafa","Hipopótamo","Rinoceronte"], correctIndex:0},
+      {question:"Qual animal é conhecido por sua capacidade de mudar de cor?", answers:["Camaleão","Polvo","Papagaio","Cobra"], correctIndex:0},
+      {question:"Qual é o mamífero mais rápido?", answers:["Leopardo","Guepardo","Cavalo","Lobo"], correctIndex:1},
+      {question:"Qual destes animais é um marsupial?", answers:["Canguru","Coala","Vaquinha","Coruja"], correctIndex:0},
+      {question:"Que animal é famoso por sua longa tromba?", answers:["Elefante","Jacaré","Girafa","Cavalo"], correctIndex:0},
+      {question:"Qual ave não voa, mas corre muito rápido?", answers:["Avestruz","Pinguim","Ema","Galinha"], correctIndex:0},
+      {question:"Qual animal marinho tem oito braços?", answers:["Polvo","Camarão","Cavalo-marinho","Lula"], correctIndex:0},
+      {question:"Qual é o som que um gato faz?", answers:["Miado","Latido","Mugido","Pio"], correctIndex:0},
+      {question:"Qual animal é conhecido como o rei da selva?", answers:["Leão","Elefante","Tigre","Lobo"], correctIndex:0},
+      {question:"Qual réptil troca regularmente de pele?", answers:["Cobra","Crocodilo","Tartaruga","Lagarto"], correctIndex:0},
+      {question:"Quantas patas tem uma aranha?", answers:["Oito","Seis","Quatro","Duas"], correctIndex:0},
+      {question:"Qual animal é símbolo da sabedoria e voa à noite?", answers:["Coruja","Águia","Falcão","Pomba"], correctIndex:0},
+      {question:"Qual destes animais vive na água doce?", answers:["Jacaré","Tubarão","Baleia","Foca"], correctIndex:0},
+      {question:"Qual é o único animal que pode voar para trás?", answers:["Beija-flor","Pombo","Andorinha","Águia"], correctIndex:0},
+      {question:"Qual animal produz mel?", answers:["Abelha","Borboleta","Vespa","Formiga"], correctIndex:0},
+      {question:"Onde vivem os pinguins?", answers:["No Polo Sul","Na floresta","No deserto","Na savana"], correctIndex:0},
+      {question:"Qual é o maior peixe do mundo?", answers:["Tubarão-baleia","Peixe-palhaço","Atum","Bacalhau"], correctIndex:0},
+      {question:"Qual animal tem uma longa língua para pegar formigas?", answers:["Tamanduá","Tatu","Rinoceronte","Camaleão"], correctIndex:0},
+      {question:"Qual animal é conhecido por sua corrida rápida e chifres curvos?", answers:["Antílope","Búfalo","Cervo","Veado"], correctIndex:0},
+      {question:"Como os morcegos se orientam no escuro?", answers:["Ecolocalização","Visão noturna","Olfato","Tato"], correctIndex:0},
+      {question:"Qual animal é famoso por guardar ovelhas?", answers:["Cão pastor","Gato","Porco","Pombo"], correctIndex:0},
+      {question:"Qual animal é conhecido por sua inteligência e uso de ferramentas?", answers:["Macaco","Cavalo","Coelho","Peixe"], correctIndex:0},
+      {question:"Qual animal possui asas mas não é uma ave?", answers:["Morcego","Pinguim","Borboleta","Mosca"], correctIndex:0},
+      {question:"Qual destes animais vive em colônias e constrói tocas?", answers:["Formiga","Cavalo","Elefante","Lobo"], correctIndex:0},
+      {question:"Como os peixes respiram debaixo d'água?", answers:["Brânquias","Pulmões","Pele","Narinas"], correctIndex:0},
+      {question:"Qual animal é conhecido por sua língua pegajosa para pegar insetos?", answers:["Sapo","Rato","Cobra","Pássaro"], correctIndex:0},
+      {question:"Qual destes animais pode regenerar membros?", answers:["Estrela do mar","Cachorro","Elefante","Tatu"], correctIndex:0},
+      {question:"Quantos corações tem um polvo?", answers:["Três","Um","Dois","Quatro"], correctIndex:0},
+      {question:"Qual animal é conhecido por sua camuflagem na água?", answers:["Polvo","Tubarão","Sapo","Cavalo-marinho"], correctIndex:3},
+      {question:"Que animal é símbolo da paz?", answers:["Pomba","Cão","Leão","Gato"], correctIndex:0},
+      {question:"Qual é o menor pássaro do mundo?", answers:["Beija-flor","Pardal","Canário","Pombo"], correctIndex:0},
+      {question:"Qual animal vive em árvores e é muito lento?", answers:["Bicho-preguiça","Mico","Macaco","Cervo"], correctIndex:0},
+      {question:"Qual destes é um anfíbio?", answers:["Sapo","Lagarto","Águia","Cavalo"], correctIndex:0},
+      {question:"Qual animal possui carapaça dura que protege seu corpo?", answers:["Tartaruga","Coelho","Gato","Cachorro"], correctIndex:0},
+      {question:"Qual é a principal função das penas nas aves?", answers:["Voar","Comer","Dormir","Nadar"], correctIndex:0},
+      {question:"Qual animal emite sons por meio de guinchos e gritos?", answers:["Morcego","Gato","Elefante","Pássaro"], correctIndex:0},
+      {question:"Qual animal tem uma língua azul?", answers:["Lagarto de língua azul","Cachorro","Tatu","Gato"], correctIndex:0},
+      {question:"Qual animal se diz o mais inteligente da água?", answers:["Golfinho","Baleia","Tubarão","Peixe-palhaço"], correctIndex:0},
+      {question:"Qual animal infecta presas com veneno através de mordida?", answers:["Cobra","Coelho","Leão","Pomba"], correctIndex:0},
+      {question:"O que os castores constroem para se proteger?", answers:["Barragens","Ninhos","Tochas","Tocas"], correctIndex:0},
+      {question:"Qual destes animais tem visão noturna poderosa?", answers:["Coruja","Beija-flor","Galinha","Cavalo"], correctIndex:0},
+      {question:"Que tipo de animal é o ornitorrinco?", answers:["Mamífero que bota ovos","Réptil","Ave","Peixe"], correctIndex:0},
+      {question:"Qual animal marinho possui uma concha espiral?", answers:["Caramujo","Polvo","Tubarão","Camarão"], correctIndex:0},
+      {question:"Qual é a principal alimentação do panda?", answers:["Bambu","Mel","Insetos","Carne"], correctIndex:0},
+      {question:"Qual animal pode viver tanto na água quanto na terra?", answers:["Sapo","Tartaruga","Elefante","Macaco"], correctIndex:0},
+      {question:"Qual animal é conhecido por suas manchas pretas e brancas?", answers:["Zebra","Leopardo","Guepardo","Girafa"], correctIndex:0},
+      {question:"Qual destes animais tem longos chifres?", answers:["Búfalo","Porco","Elefante","Girafa"], correctIndex:0},
+      {question:"Qual animal emite luz no escuro (bioluminescência)?", answers:["Vaga-lume","Cavalo","Pombo","Gato"], correctIndex:0},
+      {question:"Qual é a principal forma de defesa do ouriço-do-mar?", answers:["Espinhos","Corre rápido","Esconde-se","Morde"], correctIndex:0},
+      {question:"Qual animal é famoso por sua imitação de sons humanos?", answers:["Papagaio","Galo","Cachorro","Cavalo"], correctIndex:0},
+      {question:"Qual é o habitat natural do lobo?", answers:["Floresta","Deserto","Montanhas","Praia"], correctIndex:0},
+      {question:"Qual animal que voa tem o maior envergadura de asas?", answers:["Albatroz","Águia","Coruja","Falcão"], correctIndex:0},
+      {question:"Qual destes animais pode armazenar água no corpo para sobreviver no deserto?", answers:["Camelo","Elefante","Cachorro","Cavalo"], correctIndex:0},
+      {question:"Qual é o animal mais pesado do mundo?", answers:["Baleia-azul","Elefante","Rinoceronte","Hipopótamo"], correctIndex:0},
+      {question:"Qual animal dorme de cabeça para baixo?", answers:["Morcego","Preguiça","Coala","Gato"], correctIndex:0},
+      {question:"Qual é o animal mais venenoso do mundo?", answers:["Polvo-azul-anelado","Cobra","Aranha","Escorpião"], correctIndex:0},
+      {question:"Qual animal tem o pescoço mais longo?", answers:["Girafa","Elefante","Cavalo","Avestruz"], correctIndex:0},
+      {question:"Qual animal pode ficar mais tempo sem água?", answers:["Camelo","Cavalo","Vaca","Cachorro"], correctIndex:0},
+      {question:"Qual é o único mamífero que voa?", answers:["Morcego","Esquilo-voador","Pássaro","Borboleta"], correctIndex:0},
+      {question:"Qual animal tem a mordida mais forte?", answers:["Crocodilo","Leão","Tigre","Tubarão"], correctIndex:0},
+      {question:"Qual é o animal mais rápido dos mares?", answers:["Golfinho","Tubarão","Baleia","Peixe-espada"], correctIndex:0},
+      {question:"Qual animal consegue mudar de sexo?", answers:["Peixe-palhaço","Gato","Cachorro","Cavalo"], correctIndex:0},
+      {question:"Qual é o menor mamífero do mundo?", answers:["Musaranho","Rato","Hamster","Coelho"], correctIndex:0},
+      {question:"Qual animal tem sangue azul?", answers:["Polvo","Peixe","Cavalo","Gato"], correctIndex:0},
+      {question:"Qual é o animal que vive mais tempo?", answers:["Tartaruga","Elefante","Baleia","Papagaio"], correctIndex:0},
+      {question:"Qual animal pode correr na água?", answers:["Lagarto-basilisco","Pato","Sapo","Peixe"], correctIndex:0},
+      {question:"Qual é o único animal que não consegue pular?", answers:["Elefante","Hipopótamo","Rinoceronte","Girafa"], correctIndex:0},
+      {question:"Qual animal tem quatro estômagos?", answers:["Vaca","Cavalo","Porco","Cabra"], correctIndex:0},
+      {question:"Qual é o predador dos mares?", answers:["Tubarão-branco","Polvo","Baleia","Golfinho"], correctIndex:0},
+      {question:"Qual animal nunca para de crescer os dentes?", answers:["Rato","Gato","Cachorro","Cavalo"], correctIndex:0},
+      {question:"Qual é o animal mais barulhento?", answers:["Baleia-azul","Leão","Elefante","Macaco"], correctIndex:0},
+      {question:"Qual animal consegue ver cores ultravioletas?", answers:["Abelha","Cachorro","Gato","Cavalo"], correctIndex:0},
+      {question:"Qual é o único animal que sorri?", answers:["Golfinho","Macaco","Cachorro","Gato"], correctIndex:0},
+      {question:"Qual animal tem a língua mais comprida em relação ao corpo?", answers:["Camaleão","Cobra","Sapo","Lagarto"], correctIndex:0},
+      {question:"Qual é o animal que mais dorme por dia?", answers:["Coala","Preguiça","Gato","Cachorro"], correctIndex:0},
+      {question:"Qual animal consegue andar na parede?", answers:["Lagartixa","Aranha","Mosca","Barata"], correctIndex:0},
+      {question:"Qual é o maior inseto do mundo?", answers:["Besouro-golias","Borboleta","Libélula","Gafanhoto"], correctIndex:0},
+      {question:"Qual animal põe os ovos mais duros?", answers:["Avestruz","Galinha","Pato","Ganso"], correctIndex:0},
+      {question:"Qual é o animal que mais migra?", answers:["Andorinha-ártica","Borboleta-monarca","Salmão","Baleia"], correctIndex:0},
+      {question:"Qual animal consegue prever terremotos?", answers:["Cobra","Cachorro","Gato","Cavalo"], correctIndex:0},
+      {question:"Qual é o animal mais social?", answers:["Formiga","Abelha","Macaco","Cachorro"], correctIndex:0},
+      {question:"Qual animal pode ficar sem comer por mais tempo?", answers:["Tardigrado","Urso","Cobra","Camelo"], correctIndex:0},
+      {question:"Qual é o animal com maior expectativa de vida?", answers:["Tubarão-da-groenlândia","Tartaruga","Baleia","Elefante"], correctIndex:0},
+      {question:"Qual animal tem o coração que bate mais devagar?", answers:["Baleia-azul","Elefante","Girafa","Hipopótamo"], correctIndex:0}
+    ],
+    tipo: "animais"
+  },
+  {
+    nome: "Matemática - 3º Ano",
+    cor: "#ff7043",
+    perguntas: [
+      {titulo:"🐶 Adição Simples", pergunta:"Quanto é 2 + 5?", opcoes:["7","6","8","9"], resposta_correta:"7"},
+      {titulo:"🍎 Adição Simples", pergunta:"Quanto é 1 + 9?", opcoes:["10","9","8","11"], resposta_correta:"10"},
+      {titulo:"🚗 Adição Simples", pergunta:"Quanto é 4 + 6?", opcoes:["10","9","8","11"], resposta_correta:"10"},
+      {titulo:"🎲 Adição Simples", pergunta:"Quanto é 3 + 7?", opcoes:["10","9","8","11"], resposta_correta:"10"},
+      {titulo:"🎈 Adição Simples", pergunta:"Quanto é 5 + 5?", opcoes:["10","9","8","11"], resposta_correta:"10"},
+      {titulo:"🦄 Subtração Simples", pergunta:"Quanto é 9 - 2?", opcoes:["7","6","8","5"], resposta_correta:"7"},
+      {titulo:"🦖 Subtração Simples", pergunta:"Quanto é 10 - 4?", opcoes:["6","7","5","8"], resposta_correta:"6"},
+      {titulo:"🍭 Subtração Simples", pergunta:"Quanto é 8 - 3?", opcoes:["5","6","4","7"], resposta_correta:"5"},
+      {titulo:"🎀 Subtração Simples", pergunta:"Quanto é 7 - 5?", opcoes:["2","3","1","4"], resposta_correta:"2"},
+      {titulo:"👑 Subtração Simples", pergunta:"Quanto é 10 - 9?", opcoes:["1","2","0","3"], resposta_correta:"1"},
+      {titulo:"🧩 Tabuada Fácil", pergunta:"Quanto é 2 × 3?", opcoes:["6","5","7","8"], resposta_correta:"6"},
+      {titulo:"🚀 Tabuada Fácil", pergunta:"Quanto é 1 × 6?", opcoes:["6","5","7","8"], resposta_correta:"6"},
+      {titulo:"🦋 Tabuada Fácil", pergunta:"Quanto é 4 × 2?", opcoes:["8","6","7","9"], resposta_correta:"8"},
+      {titulo:"⭐ Tabuada Fácil", pergunta:"Quanto é 3 × 5?", opcoes:["15","12","18","20"], resposta_correta:"15"},
+      {titulo:"⚽ Tabuada Fácil", pergunta:"Quanto é 5 × 2?", opcoes:["10","8","12","15"], resposta_correta:"10"},
+      {titulo:"🐰 Divisão Fácil", pergunta:"Quanto é 6 ÷ 2?", opcoes:["3","2","4","5"], resposta_correta:"3"},
+      {titulo:"🌟 Divisão Fácil", pergunta:"Quanto é 8 ÷ 4?", opcoes:["2","3","1","4"], resposta_correta:"2"},
+      {titulo:"🐱 Divisão Fácil", pergunta:"Quanto é 10 ÷ 2?", opcoes:["5","4","6","3"], resposta_correta:"5"},
+      {titulo:"🌈 Divisão Fácil", pergunta:"Quanto é 15 ÷ 5?", opcoes:["3","2","4","5"], resposta_correta:"3"},
+      {titulo:"🎸 Divisão Fácil", pergunta:"Quanto é 9 ÷ 3?", opcoes:["3","2","4","5"], resposta_correta:"3"},
+      {titulo:"🐻 Adição Intermediária", pergunta:"Quanto é 17 + 5?", opcoes:["22","21","23","20"], resposta_correta:"22"},
+      {titulo:"🦊 Adição Intermediária", pergunta:"Quanto é 12 + 15?", opcoes:["27","26","28","25"], resposta_correta:"27"},
+      {titulo:"🦄 Adição Intermediária", pergunta:"Quanto é 24 + 16?", opcoes:["40","39","41","38"], resposta_correta:"40"},
+      {titulo:"🐵 Adição Intermediária", pergunta:"Quanto é 28 + 13?", opcoes:["41","40","42","39"], resposta_correta:"41"},
+      {titulo:"🦁 Adição Intermediária", pergunta:"Quanto é 21 + 19?", opcoes:["40","39","41","38"], resposta_correta:"40"},
+      {titulo:"🐸 Subtração Intermediária", pergunta:"Quanto é 23 - 7?", opcoes:["16","15","17","14"], resposta_correta:"16"},
+      {titulo:"🐢 Subtração Intermediária", pergunta:"Quanto é 30 - 14?", opcoes:["16","15","17","14"], resposta_correta:"16"},
+      {titulo:"🐼 Subtração Intermediária", pergunta:"Quanto é 27 - 13?", opcoes:["14","15","13","16"], resposta_correta:"14"},
+      {titulo:"🐮 Subtração Intermediária", pergunta:"Quanto é 40 - 25?", opcoes:["15","14","16","13"], resposta_correta:"15"},
+      {titulo:"🦓 Subtração Intermediária", pergunta:"Quanto é 34 - 8?", opcoes:["26","25","27","24"], resposta_correta:"26"},
+      {titulo:"🐥 Multiplicação Intermediária", pergunta:"Quanto é 6 × 4?", opcoes:["24","20","28","25"], resposta_correta:"24"},
+      {titulo:"🐨 Multiplicação Intermediária", pergunta:"Quanto é 7 × 3?", opcoes:["21","18","24","20"], resposta_correta:"21"},
+      {titulo:"🦅 Multiplicação Intermediária", pergunta:"Quanto é 5 × 9?", opcoes:["45","40","50","35"], resposta_correta:"45"},
+      {titulo:"🦉 Multiplicação Intermediária", pergunta:"Quanto é 8 × 2?", opcoes:["16","14","18","12"], resposta_correta:"16"},
+      {titulo:"🦜 Multiplicação Intermediária", pergunta:"Quanto é 10 × 6?", opcoes:["60","50","70","55"], resposta_correta:"60"},
+      {titulo:"🦄 Divisão Intermediária", pergunta:"Quanto é 48 ÷ 6?", opcoes:["8","6","10","7"], resposta_correta:"8"},
+      {titulo:"🦢 Divisão Intermediária", pergunta:"Quanto é 56 ÷ 7?", opcoes:["8","7","9","6"], resposta_correta:"8"},
+      {titulo:"🐧 Divisão Intermediária", pergunta:"Quanto é 72 ÷ 9?", opcoes:["8","7","9","6"], resposta_correta:"8"},
+      {titulo:"🦚 Divisão Intermediária", pergunta:"Quanto é 54 ÷ 6?", opcoes:["9","8","10","7"], resposta_correta:"9"},
+      {titulo:"🦆 Divisão Intermediária", pergunta:"Quanto é 63 ÷ 7?", opcoes:["9","8","10","7"], resposta_correta:"9"},
+      {titulo:"🎯 Adição Avançada", pergunta:"Quanto é 35 + 28?", opcoes:["63","62","64","61"], resposta_correta:"63"},
+      {titulo:"🎪 Adição Avançada", pergunta:"Quanto é 47 + 36?", opcoes:["83","82","84","81"], resposta_correta:"83"},
+      {titulo:"🎭 Adição Avançada", pergunta:"Quanto é 59 + 24?", opcoes:["83","82","84","81"], resposta_correta:"83"},
+      {titulo:"🎨 Adição Avançada", pergunta:"Quanto é 38 + 45?", opcoes:["83","82","84","81"], resposta_correta:"83"},
+      {titulo:"🎵 Adição Avançada", pergunta:"Quanto é 29 + 37?", opcoes:["66","65","67","64"], resposta_correta:"66"},
+      {titulo:"🔢 Subtração Avançada", pergunta:"Quanto é 85 - 39?", opcoes:["46","45","47","44"], resposta_correta:"46"},
+      {titulo:"🔣 Subtração Avançada", pergunta:"Quanto é 92 - 48?", opcoes:["44","43","45","42"], resposta_correta:"44"},
+      {titulo:"🔤 Subtração Avançada", pergunta:"Quanto é 76 - 29?", opcoes:["47","46","48","45"], resposta_correta:"47"},
+      {titulo:"🔥 Subtração Avançada", pergunta:"Quanto é 63 - 27?", opcoes:["36","35","37","34"], resposta_correta:"36"},
+      {titulo:"🔍 Subtração Avançada", pergunta:"Quanto é 88 - 35?", opcoes:["53","52","54","51"], resposta_correta:"53"},
+      {titulo:"⭐ Multiplicação Avançada", pergunta:"Quanto é 9 × 7?", opcoes:["63","56","70","49"], resposta_correta:"63"},
+      {titulo:"⚡ Multiplicação Avançada", pergunta:"Quanto é 8 × 9?", opcoes:["72","63","81","64"], resposta_correta:"72"},
+      {titulo:"❄️ Multiplicação Avançada", pergunta:"Quanto é 7 × 8?", opcoes:["56","48","64","49"], resposta_correta:"56"},
+      {titulo:"🌟 Multiplicação Avançada", pergunta:"Quanto é 6 × 9?", opcoes:["54","48","63","45"], resposta_correta:"54"},
+      {titulo:"⚽ Multiplicação Avançada", pergunta:"Quanto é 9 × 9?", opcoes:["81","72","90","63"], resposta_correta:"81"},
+      {titulo:"🏀 Divisão Avançada", pergunta:"Quanto é 84 ÷ 12?", opcoes:["7","6","8","9"], resposta_correta:"7"},
+      {titulo:"🏈 Divisão Avançada", pergunta:"Quanto é 96 ÷ 8?", opcoes:["12","10","14","11"], resposta_correta:"12"},
+      {titulo:"🎾 Divisão Avançada", pergunta:"Quanto é 75 ÷ 15?", opcoes:["5","4","6","7"], resposta_correta:"5"},
+      {titulo:"🏐 Divisão Avançada", pergunta:"Quanto é 88 ÷ 11?", opcoes:["8","7","9","6"], resposta_correta:"8"},
+      {titulo:"🎱 Divisão Avançada", pergunta:"Quanto é 91 ÷ 13?", opcoes:["7","6","8","9"], resposta_correta:"7"},
+      {titulo:"🎮 Soma com 3 números", pergunta:"Quanto é 5 + 7 + 3?", opcoes:["15","14","16","13"], resposta_correta:"15"},
+      {titulo:"🎲 Soma com 3 números", pergunta:"Quanto é 8 + 6 + 4?", opcoes:["18","17","19","16"], resposta_correta:"18"},
+      {titulo:"🃏 Soma com 3 números", pergunta:"Quanto é 9 + 3 + 7?", opcoes:["19","18","20","17"], resposta_correta:"19"},
+      {titulo:"🎪 Soma com 3 números", pergunta:"Quanto é 4 + 8 + 5?", opcoes:["17","16","18","15"], resposta_correta:"17"},
+      {titulo:"🎨 Soma com 3 números", pergunta:"Quanto é 6 + 9 + 2?", opcoes:["17","16","18","15"], resposta_correta:"17"},
+      {titulo:"🧮 Tabuada do 6", pergunta:"Quanto é 6 × 6?", opcoes:["36","30","42","35"], resposta_correta:"36"},
+      {titulo:"📊 Tabuada do 6", pergunta:"Quanto é 6 × 7?", opcoes:["42","36","48","35"], resposta_correta:"42"},
+      {titulo:"📈 Tabuada do 6", pergunta:"Quanto é 6 × 8?", opcoes:["48","42","54","40"], resposta_correta:"48"},
+      {titulo:"📉 Tabuada do 6", pergunta:"Quanto é 6 × 9?", opcoes:["54","48","60","45"], resposta_correta:"54"},
+      {titulo:"📋 Tabuada do 6", pergunta:"Quanto é 6 × 10?", opcoes:["60","54","66","50"], resposta_correta:"60"},
+      {titulo:"🎯 Problemas", pergunta:"João tem 15 bolinhas. Ganhou mais 8. Quantas tem agora?", opcoes:["23","22","24","21"], resposta_correta:"23"},
+      {titulo:"🎪 Problemas", pergunta:"Maria tinha 30 doces. Comeu 12. Quantos sobraram?", opcoes:["18","17","19","16"], resposta_correta:"18"},
+      {titulo:"🎭 Problemas", pergunta:"Pedro comprou 4 pacotes com 7 balas cada. Quantas balas ao todo?", opcoes:["28","24","32","25"], resposta_correta:"28"},
+      {titulo:"🎨 Problemas", pergunta:"Ana tem 20 figurinhas para dividir igualmente em 4 grupos. Quantas em cada grupo?", opcoes:["5","4","6","7"], resposta_correta:"5"},
+      {titulo:"🎵 Problemas", pergunta:"Carlos tinha 25 reais. Gastou 9 reais. Quanto sobrou?", opcoes:["16","15","17","14"], resposta_correta:"16"},
+      {titulo:"🔢 Números pares", pergunta:"Qual destes é um número par?", opcoes:["14","13","15","17"], resposta_correta:"14"},
+      {titulo:"🔣 Números ímpares", pergunta:"Qual destes é um número ímpar?", opcoes:["19","18","20","22"], resposta_correta:"19"},
+      {titulo:"🔤 Maior número", pergunta:"Qual é o maior número?", opcoes:["89","78","87","79"], resposta_correta:"89"},
+      {titulo:"🔥 Menor número", pergunta:"Qual é o menor número?", opcoes:["34","43","35","45"], resposta_correta:"34"},
+      {titulo:"🔍 Números crescentes", pergunta:"Coloque em ordem crescente: 25, 52, 15", opcoes:["15, 25, 52","25, 15, 52","52, 25, 15","15, 52, 25"], resposta_correta:"15, 25, 52"},
+      {titulo:"🎯 Sequência", pergunta:"Qual número vem depois: 10, 20, 30, __", opcoes:["40","35","50","45"], resposta_correta:"40"},
+      {titulo:"🎲 Dobro", pergunta:"Qual é o dobro de 12?", opcoes:["24","22","26","20"], resposta_correta:"24"},
+      {titulo:"🎪 Metade", pergunta:"Qual é a metade de 18?", opcoes:["9","8","10","6"], resposta_correta:"9"},
+      {titulo:"🎭 Centena", pergunta:"Quantas dezenas tem o número 150?", opcoes:["15","5","1","150"], resposta_correta:"15"},
+      {titulo:"🎨 Unidades", pergunta:"No número 347, qual é o algarismo das unidades?", opcoes:["7","4","3","47"], resposta_correta:"7"}
+    ],
+    tipo: "default"
+  },
+    {
+    nome: "Leitura de Horas",
+    cor: "#5145BA",
+    perguntas: [
+      {titulo:"🕐 Hora Fácil", pergunta:"Qual relógio mostra 1:00?", opcoes:[{hour:1,min:0},{hour:12,min:15},{hour:2,min:30},{hour:3,min:45}], resposta_correta:0},
+      {titulo:"🕑 Hora Fácil", pergunta:"Qual relógio mostra 2:00?", opcoes:[{hour:3,min:15},{hour:2,min:0},{hour:4,min:30},{hour:1,min:0}], resposta_correta:1},
+      {titulo:"🕒 Hora Fácil", pergunta:"Qual relógio mostra 3:00?", opcoes:[{hour:2,min:15},{hour:4,min:45},{hour:3,min:0},{hour:5,min:30}], resposta_correta:2},
+      {titulo:"🕓 Hora Fácil", pergunta:"Qual relógio mostra 4:00?", opcoes:[{hour:5,min:15},{hour:6,min:30},{hour:7,min:45},{hour:4,min:0}], resposta_correta:3},
+      {titulo:"🕔 Hora Fácil", pergunta:"Qual relógio mostra 5:00?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:8,min:45}], resposta_correta:0},
+      {titulo:"🕕 Hora Fácil", pergunta:"Qual relógio mostra 6:00?", opcoes:[{hour:7,min:15},{hour:6,min:0},{hour:8,min:30},{hour:9,min:45}], resposta_correta:1},
+      {titulo:"🕖 Hora Fácil", pergunta:"Qual relógio mostra 7:00?", opcoes:[{hour:8,min:15},{hour:9,min:30},{hour:7,min:0},{hour:10,min:45}], resposta_correta:2},
+      {titulo:"🕗 Hora Fácil", pergunta:"Qual relógio mostra 8:00?", opcoes:[{hour:9,min:15},{hour:10,min:30},{hour:11,min:45},{hour:8,min:0}], resposta_correta:3},
+      {titulo:"🕘 Hora Fácil", pergunta:"Qual relógio mostra 9:00?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:30},{hour:12,min:45}], resposta_correta:0},
+      {titulo:"🕙 Hora Fácil", pergunta:"Qual relógio mostra 10:00?", opcoes:[{hour:11,min:15},{hour:10,min:0},{hour:12,min:30},{hour:1,min:45}], resposta_correta:1},
+      {titulo:"🕚 Hora Fácil", pergunta:"Qual relógio mostra 11:00?", opcoes:[{hour:12,min:15},{hour:1,min:30},{hour:11,min:0},{hour:2,min:45}], resposta_correta:2},
+      {titulo:"🕛 Hora Fácil", pergunta:"Qual relógio mostra 12:00?", opcoes:[{hour:1,min:15},{hour:2,min:30},{hour:3,min:45},{hour:12,min:0}], resposta_correta:3},
+      {titulo:"🕐 Meia Hora", pergunta:"Qual relógio mostra 1:30?", opcoes:[{hour:1,min:30},{hour:2,min:0},{hour:3,min:15},{hour:4,min:45}], resposta_correta:0},
+      {titulo:"🕑 Meia Hora", pergunta:"Qual relógio mostra 2:30?", opcoes:[{hour:3,min:0},{hour:2,min:30},{hour:4,min:15},{hour:5,min:45}], resposta_correta:1},
+      {titulo:"🕒 Meia Hora", pergunta:"Qual relógio mostra 3:30?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:30},{hour:6,min:45}], resposta_correta:2},
+      {titulo:"🕓 Meia Hora", pergunta:"Qual relógio mostra 4:30?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:45},{hour:4,min:30}], resposta_correta:3},
+      {titulo:"🕔 Meia Hora", pergunta:"Qual relógio mostra 5:30?", opcoes:[{hour:5,min:30},{hour:6,min:0},{hour:7,min:15},{hour:8,min:45}], resposta_correta:0},
+      {titulo:"🕕 Meia Hora", pergunta:"Qual relógio mostra 6:30?", opcoes:[{hour:7,min:0},{hour:6,min:30},{hour:8,min:15},{hour:9,min:45}], resposta_correta:1},
+      {titulo:"🕖 Meia Hora", pergunta:"Qual relógio mostra 7:30?", opcoes:[{hour:8,min:0},{hour:9,min:15},{hour:7,min:30},{hour:10,min:45}], resposta_correta:2},
+      {titulo:"🕗 Meia Hora", pergunta:"Qual relógio mostra 8:30?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:45},{hour:8,min:30}], resposta_correta:3},
+      {titulo:"🕘 Quinze minutos", pergunta:"Qual relógio mostra 9:15?", opcoes:[{hour:9,min:15},{hour:10,min:0},{hour:11,min:30},{hour:12,min:45}], resposta_correta:0},
+      {titulo:"🕙 Quinze minutos", pergunta:"Qual relógio mostra 10:15?", opcoes:[{hour:11,min:0},{hour:10,min:15},{hour:12,min:30},{hour:1,min:45}], resposta_correta:1},
+      {titulo:"🕚 Quinze minutos", pergunta:"Qual relógio mostra 11:15?", opcoes:[{hour:12,min:0},{hour:1,min:30},{hour:11,min:15},{hour:2,min:45}], resposta_correta:2},
+      {titulo:"🕛 Quinze minutos", pergunta:"Qual relógio mostra 12:15?", opcoes:[{hour:1,min:0},{hour:2,min:30},{hour:3,min:45},{hour:12,min:15}], resposta_correta:3},
+      {titulo:"🕐 Quarenta e cinco", pergunta:"Qual relógio mostra 1:45?", opcoes:[{hour:1,min:45},{hour:2,min:0},{hour:3,min:15},{hour:4,min:30}], resposta_correta:0},
+      {titulo:"🕑 Quarenta e cinco", pergunta:"Qual relógio mostra 2:45?", opcoes:[{hour:3,min:0},{hour:2,min:45},{hour:4,min:15},{hour:5,min:30}], resposta_correta:1},
+      {titulo:"🕒 Quarenta e cinco", pergunta:"Qual relógio mostra 3:45?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:45},{hour:6,min:30}], resposta_correta:2},
+      {titulo:"🕓 Quarenta e cinco", pergunta:"Qual relógio mostra 4:45?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:4,min:45}], resposta_correta:3},
+      {titulo:"🕔 Quarenta e cinco", pergunta:"Qual relógio mostra 5:45?", opcoes:[{hour:5,min:45},{hour:6,min:0},{hour:7,min:15},{hour:8,min:30}], resposta_correta:0},
+      {titulo:"🕕 Quarenta e cinco", pergunta:"Qual relógio mostra 6:45?", opcoes:[{hour:7,min:0},{hour:6,min:45},{hour:8,min:15},{hour:9,min:30}], resposta_correta:1},
+      {titulo:"🕖 Quarenta e cinco", pergunta:"Qual relógio mostra 7:45?", opcoes:[{hour:8,min:0},{hour:9,min:15},{hour:7,min:45},{hour:10,min:30}], resposta_correta:2},
+      {titulo:"🕗 Quarenta e cinco", pergunta:"Qual relógio mostra 8:45?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:30},{hour:8,min:45}], resposta_correta:3},
+      {titulo:"🕘 Quarenta e cinco", pergunta:"Qual relógio mostra 9:45?", opcoes:[{hour:9,min:45},{hour:10,min:0},{hour:11,min:15},{hour:12,min:30}], resposta_correta:0},
+      {titulo:"🕙 Quarenta e cinco", pergunta:"Qual relógio mostra 10:45?", opcoes:[{hour:11,min:0},{hour:10,min:45},{hour:12,min:15},{hour:1,min:30}], resposta_correta:1},
+      {titulo:"🕚 Quarenta e cinco", pergunta:"Qual relógio mostra 11:45?", opcoes:[{hour:12,min:0},{hour:1,min:15},{hour:11,min:45},{hour:2,min:30}], resposta_correta:2},
+      {titulo:"🕛 Quarenta e cinco", pergunta:"Qual relógio mostra 12:45?", opcoes:[{hour:1,min:0},{hour:2,min:15},{hour:3,min:30},{hour:12,min:45}], resposta_correta:3},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 1:20?", opcoes:[{hour:1,min:20},{hour:2,min:0},{hour:3,min:15},{hour:4,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 2:25?", opcoes:[{hour:3,min:0},{hour:2,min:25},{hour:4,min:15},{hour:5,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 3:50?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:50},{hour:6,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 4:55?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:4,min:55}], resposta_correta:3},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 5:35?", opcoes:[{hour:5,min:35},{hour:6,min:0},{hour:7,min:15},{hour:8,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 6:40?", opcoes:[{hour:7,min:0},{hour:6,min:40},{hour:8,min:15},{hour:9,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 7:50?", opcoes:[{hour:8,min:0},{hour:9,min:15},{hour:7,min:50},{hour:10,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 8:55?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:30},{hour:8,min:55}], resposta_correta:3},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 9:05?", opcoes:[{hour:9,min:5},{hour:10,min:0},{hour:11,min:15},{hour:12,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 10:07?", opcoes:[{hour:11,min:0},{hour:10,min:7},{hour:12,min:15},{hour:1,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 11:12?", opcoes:[{hour:12,min:0},{hour:1,min:15},{hour:11,min:12},{hour:2,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 12:15?", opcoes:[{hour:1,min:0},{hour:2,min:15},{hour:3,min:30},{hour:12,min:15}], resposta_correta:3},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 1:18?", opcoes:[{hour:1,min:18},{hour:2,min:0},{hour:3,min:15},{hour:4,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 2:22?", opcoes:[{hour:3,min:0},{hour:2,min:22},{hour:4,min:15},{hour:5,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 3:52?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:52},{hour:6,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 4:58?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:4,min:58}], resposta_correta:3},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 5:03?", opcoes:[{hour:5,min:3},{hour:6,min:0},{hour:7,min:15},{hour:8,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 6:08?", opcoes:[{hour:7,min:0},{hour:6,min:8},{hour:8,min:15},{hour:9,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 7:20?", opcoes:[{hour:8,min:0},{hour:9,min:15},{hour:7,min:20},{hour:10,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 8:23?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:30},{hour:8,min:23}], resposta_correta:3},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 9:40?", opcoes:[{hour:9,min:40},{hour:10,min:0},{hour:11,min:15},{hour:12,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 10:44?", opcoes:[{hour:11,min:0},{hour:10,min:44},{hour:12,min:15},{hour:1,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 11:39?", opcoes:[{hour:12,min:0},{hour:1,min:15},{hour:11,min:39},{hour:2,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos específicos", pergunta:"Qual relógio mostra 12:42?", opcoes:[{hour:1,min:0},{hour:2,min:15},{hour:3,min:30},{hour:12,min:42}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 1:33?", opcoes:[{hour:1,min:33},{hour:2,min:0},{hour:3,min:15},{hour:4,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 2:17?", opcoes:[{hour:3,min:0},{hour:2,min:17},{hour:4,min:15},{hour:5,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 3:28?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:28},{hour:6,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 4:11?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:4,min:11}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 5:47?", opcoes:[{hour:5,min:47},{hour:6,min:0},{hour:7,min:15},{hour:8,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 6:29?", opcoes:[{hour:7,min:0},{hour:6,min:29},{hour:8,min:15},{hour:9,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 7:38?", opcoes:[{hour:8,min:0},{hour:9,min:15},{hour:7,min:38},{hour:10,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 8:14?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:30},{hour:8,min:14}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 9:26?", opcoes:[{hour:9,min:26},{hour:10,min:0},{hour:11,min:15},{hour:12,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 10:31?", opcoes:[{hour:11,min:0},{hour:10,min:31},{hour:12,min:15},{hour:1,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 11:49?", opcoes:[{hour:12,min:0},{hour:1,min:15},{hour:11,min:49},{hour:2,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 12:36?", opcoes:[{hour:1,min:0},{hour:2,min:15},{hour:3,min:30},{hour:12,min:36}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 1:41?", opcoes:[{hour:1,min:41},{hour:2,min:0},{hour:3,min:15},{hour:4,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 2:53?", opcoes:[{hour:3,min:0},{hour:2,min:53},{hour:4,min:15},{hour:5,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 3:19?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:19},{hour:6,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 4:27?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:4,min:27}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 5:34?", opcoes:[{hour:5,min:34},{hour:6,min:0},{hour:7,min:15},{hour:8,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 6:46?", opcoes:[{hour:7,min:0},{hour:6,min:46},{hour:8,min:15},{hour:9,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 7:13?", opcoes:[{hour:8,min:0},{hour:9,min:15},{hour:7,min:13},{hour:10,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 8:37?", opcoes:[{hour:9,min:0},{hour:10,min:15},{hour:11,min:30},{hour:8,min:37}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 9:48?", opcoes:[{hour:9,min:48},{hour:10,min:0},{hour:11,min:15},{hour:12,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 10:21?", opcoes:[{hour:11,min:0},{hour:10,min:21},{hour:12,min:15},{hour:1,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 11:16?", opcoes:[{hour:12,min:0},{hour:1,min:15},{hour:11,min:16},{hour:2,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 12:57?", opcoes:[{hour:1,min:0},{hour:2,min:15},{hour:3,min:30},{hour:12,min:57}], resposta_correta:3},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 1:09?", opcoes:[{hour:1,min:9},{hour:2,min:0},{hour:3,min:15},{hour:4,min:30}], resposta_correta:0},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 2:51?", opcoes:[{hour:3,min:0},{hour:2,min:51},{hour:4,min:15},{hour:5,min:30}], resposta_correta:1},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 3:24?", opcoes:[{hour:4,min:0},{hour:5,min:15},{hour:3,min:24},{hour:6,min:30}], resposta_correta:2},
+      {titulo:"⏰ Minutos avançados", pergunta:"Qual relógio mostra 4:32?", opcoes:[{hour:5,min:0},{hour:6,min:15},{hour:7,min:30},{hour:4,min:32}], resposta_correta:3}
+    ],
+    tipo: "relogio"
+  },
+
+  {
+    nome: "Unidades e Medidas",
+    cor: "#0097A7",
+    perguntas: [
+      {titulo:"📏 Unidade de Comprimento", pergunta:"Qual dessas é uma unidade de comprimento?", opcoes:["metro","quilo","litro","segundo"], resposta_correta:"metro"},
+      {titulo:"⚖️ Unidade de Massa", pergunta:"Qual é usada para medir massa?", opcoes:["grama","litro","segundo","grau"], resposta_correta:"grama"},
+      {titulo:"🧪 Volume", pergunta:"Qual é a unidade para medir volume?", opcoes:["litro","metro","quilo","hora"], resposta_correta:"litro"},
+      {titulo:"⏰ Tempo", pergunta:"O que medimos em segundos?", opcoes:["tempo","massa","comprimento","volume"], resposta_correta:"tempo"},
+      {titulo:"🛒 Peso do pacote", pergunta:"Um pacote de feijão comum pesa cerca de...", opcoes:["1 quilo","1 metro","1 litro","1 segundo"], resposta_correta:"1 quilo"},
+      {titulo:"🥛 Leite", pergunta:"Um copo de leite contém cerca de...", opcoes:["200 mililitros","200 metros","200 segundos","200 gramas"], resposta_correta:"200 mililitros"},
+      {titulo:"🚗 Distância", pergunta:"A distância entre cidades geralmente é medida em...", opcoes:["quilômetros","gramas","litros","centímetros"], resposta_correta:"quilômetros"},
+      {titulo:"🔬 Massa", pergunta:"500 gramas equivale a quantos quilos?", opcoes:["0,5 quilo","5 quilos","50 quilos","1 quilo"], resposta_correta:"0,5 quilo"},
+      {titulo:"🍹 Litros e mililitros", pergunta:"1000 mililitros correspondem a quantos litros?", opcoes:["1 litro","100 litros","0,1 litro","10 litros"], resposta_correta:"1 litro"},
+      {titulo:"⏳ Minuto", pergunta:"Quantos segundos tem um minuto?", opcoes:["60","10","600","100"], resposta_correta:"60"},
+      {titulo:"📐 Centímetros", pergunta:"Quantos centímetros tem um metro?", opcoes:["100","10","1000","50"], resposta_correta:"100"},
+      {titulo:"⚖️ Quilograma", pergunta:"Quantos gramas tem um quilograma?", opcoes:["1000","100","10","500"], resposta_correta:"1000"},
+      {titulo:"🕐 Hora", pergunta:"Quantos minutos tem uma hora?", opcoes:["60","100","30","24"], resposta_correta:"60"},
+      {titulo:"📏 Altura", pergunta:"Qual unidade usamos para medir a altura de uma pessoa?", opcoes:["metro","quilograma","litro","segundo"], resposta_correta:"metro"},
+      {titulo:"🧴 Capacidade", pergunta:"Qual unidade mede a capacidade de uma garrafa?", opcoes:["litro","metro","quilo","grau"], resposta_correta:"litro"},
+      {titulo:"⏱️ Dia", pergunta:"Quantas horas tem um dia?", opcoes:["24","12","60","100"], resposta_correta:"24"},
+      {titulo:"📊 Meio quilo", pergunta:"Meio quilo equivale a quantos gramas?", opcoes:["500","250","1000","100"], resposta_correta:"500"},
+      {titulo:"🥤 Meio litro", pergunta:"Meio litro equivale a quantos mililitros?", opcoes:["500","250","1000","100"], resposta_correta:"500"},
+      {titulo:"📏 Meio metro", pergunta:"Meio metro equivale a quantos centímetros?", opcoes:["50","25","100","10"], resposta_correta:"50"},
+      {titulo:"⏰ Meia hora", pergunta:"Meia hora equivale a quantos minutos?", opcoes:["30","15","60","45"], resposta_correta:"30"},
+      {titulo:"📐 Milímetro", pergunta:"Quantos milímetros tem um centímetro?", opcoes:["10","100","5","2"], resposta_correta:"10"},
+      {titulo:"⚖️ Tonelada", pergunta:"Quantos quilos tem uma tonelada?", opcoes:["1000","100","500","2000"], resposta_correta:"1000"},
+      {titulo:"🕐 Semana", pergunta:"Quantos dias tem uma semana?", opcoes:["7","5","10","14"], resposta_correta:"7"},
+      {titulo:"📅 Mês", pergunta:"Quantos dias tem aproximadamente um mês?", opcoes:["30","20","40","15"], resposta_correta:"30"},
+      {titulo:"📆 Ano", pergunta:"Quantos meses tem um ano?", opcoes:["12","10","15","6"], resposta_correta:"12"},
+      {titulo:"🌡️ Temperatura", pergunta:"Qual unidade mede temperatura?", opcoes:["grau Celsius","metro","quilo","litro"], resposta_correta:"grau Celsius"},
+      {titulo:"🏃 Velocidade", pergunta:"A velocidade é medida em:", opcoes:["quilômetros por hora","metros","segundos","gramas"], resposta_correta:"quilômetros por hora"},
+      {titulo:"📏 Régua", pergunta:"Uma régua escolar comum mede:", opcoes:["30 centímetros","1 metro","50 centímetros","20 centímetros"], resposta_correta:"30 centímetros"},
+      {titulo:"⚖️ Balança", pergunta:"Uma balança mede:", opcoes:["massa","comprimento","temperatura","tempo"], resposta_correta:"massa"},
+      {titulo:"🥛 Copo", pergunta:"Um copo comum tem capacidade de:", opcoes:["250 ml","1 litro","500 ml","100 ml"], resposta_correta:"250 ml"},
+      {titulo:"🚶 Passo", pergunta:"Um passo de adulto mede aproximadamente:", opcoes:["70 centímetros","1 metro","50 centímetros","30 centímetros"], resposta_correta:"70 centímetros"},
+      {titulo:"📱 Celular", pergunta:"Um celular pesa aproximadamente:", opcoes:["200 gramas","1 quilo","50 gramas","500 gramas"], resposta_correta:"200 gramas"},
+      {titulo:"🚗 Carro", pergunta:"Um carro comum pesa cerca de:", opcoes:["1 tonelada","100 quilos","500 quilos","2 toneladas"], resposta_correta:"1 tonelada"},
+      {titulo:"🏠 Sala", pergunta:"Uma sala comum tem cerca de:", opcoes:["20 metros quadrados","5 metros quadrados","100 metros quadrados","2 metros quadrados"], resposta_correta:"20 metros quadrados"},
+      {titulo:"🌊 Piscina", pergunta:"Uma piscina pequena tem cerca de:", opcoes:["10.000 litros","1.000 litros","100 litros","100.000 litros"], resposta_correta:"10.000 litros"},
+      {titulo:"🎒 Mochila", pergunta:"Uma mochila escolar pesa cerca de:", opcoes:["2 quilos","10 quilos","500 gramas","5 quilos"], resposta_correta:"2 quilos"},
+      {titulo:"📺 TV", pergunta:"Uma TV de 32 polegadas mede cerca de:", opcoes:["80 centímetros","50 centímetros","1 metro","30 centímetros"], resposta_correta:"80 centímetros"},
+      {titulo:"🍎 Maçã", pergunta:"Uma maçã pesa cerca de:", opcoes:["150 gramas","500 gramas","50 gramas","1 quilo"], resposta_correta:"150 gramas"},
+      {titulo:"📚 Livro", pergunta:"Um livro escolar pesa cerca de:", opcoes:["300 gramas","1 quilo","100 gramas","2 quilos"], resposta_correta:"300 gramas"},
+      {titulo:"🏃 Corrida", pergunta:"Em uma corrida de 100 metros, a distância é medida em:", opcoes:["metros","quilômetros","centímetros","milímetros"], resposta_correta:"metros"},
+      {titulo:"🕐 Aula", pergunta:"Uma aula dura aproximadamente:", opcoes:["45 minutos","1 hora","2 horas","30 minutos"], resposta_correta:"45 minutos"},
+      {titulo:"🌡️ Febre", pergunta:"A temperatura normal do corpo humano é:", opcoes:["36,5°C","40°C","30°C","50°C"], resposta_correta:"36,5°C"},
+      {titulo:"🏊 Piscina olímpica", pergunta:"Uma piscina olímpica tem:", opcoes:["50 metros","25 metros","100 metros","10 metros"], resposta_correta:"50 metros"},
+      {titulo:"⛽ Combustível", pergunta:"Um carro consome cerca de 1 litro de combustível a cada:", opcoes:["10 quilômetros","5 quilômetros","20 quilômetros","50 quilômetros"], resposta_correta:"10 quilômetros"},
+      {titulo:"🥤 Refrigerante", pergunta:"Uma lata de refrigerante tem:", opcoes:["350 ml","500 ml","250 ml","1 litro"], resposta_correta:"350 ml"},
+      {titulo:"🍞 Pão", pergunta:"Um pão francês pesa cerca de:", opcoes:["50 gramas","100 gramas","200 gramas","20 gramas"], resposta_correta:"50 gramas"},
+      {titulo:"🚲 Bicicleta", pergunta:"Uma bicicleta pesa cerca de:", opcoes:["15 quilos","5 quilos","30 quilos","50 quilos"], resposta_correta:"15 quilos"},
+      {titulo:"📏 Mesa", pergunta:"Uma mesa escolar tem cerca de:", opcoes:["1 metro de altura","50 centímetros de altura","2 metros de altura","30 centímetros de altura"], resposta_correta:"1 metro de altura"},
+      {titulo:"⚖️ Bebê", pergunta:"Um bebê recém-nascido pesa cerca de:", opcoes:["3,5 quilos","1 quilo","10 quilos","500 gramas"], resposta_correta:"3,5 quilos"},
+      {titulo:"🏃 Maratona", pergunta:"Uma maratona tem:", opcoes:["42 quilômetros","21 quilômetros","10 quilômetros","5 quilômetros"], resposta_correta:"42 quilômetros"},
+      {titulo:"🌡️ Água fervendo", pergunta:"A água ferve a:", opcoes:["100°C","50°C","0°C","200°C"], resposta_correta:"100°C"},
+      {titulo:"🌡️ Água congelando", pergunta:"A água congela a:", opcoes:["0°C","100°C","-10°C","10°C"], resposta_correta:"0°C"},
+      {titulo:"📐 Esquadro", pergunta:"Um esquadro escolar mede:", opcoes:["15 centímetros","30 centímetros","10 centímetros","5 centímetros"], resposta_correta:"15 centímetros"},
+      {titulo:"⏰ Recreio", pergunta:"O recreio escolar dura cerca de:", opcoes:["15 minutos","30 minutos","45 minutos","5 minutos"], resposta_correta:"15 minutos"},
+      {titulo:"📺 Filme", pergunta:"Um filme comum dura cerca de:", opcoes:["2 horas","1 hora","3 horas","30 minutos"], resposta_correta:"2 horas"},
+      {titulo:"🎵 Música", pergunta:"Uma música comum dura cerca de:", opcoes:["3 minutos","10 minutos","1 minuto","30 segundos"], resposta_correta:"3 minutos"},
+      {titulo:"🚗 Velocidade na cidade", pergunta:"A velocidade máxima na cidade geralmente é:", opcoes:["50 km/h","100 km/h","30 km/h","80 km/h"], resposta_correta:"50 km/h"},
+      {titulo:"🛣️ Velocidade na rodovia", pergunta:"A velocidade máxima na rodovia geralmente é:", opcoes:["110 km/h","50 km/h","200 km/h","80 km/h"], resposta_correta:"110 km/h"},
+      {titulo:"📏 Porta", pergunta:"Uma porta comum tem cerca de:", opcoes:["2 metros de altura","1,5 metros de altura","3 metros de altura","1 metro de altura"], resposta_correta:"2 metros de altura"},
+      {titulo:"🏠 Teto", pergunta:"O teto de uma casa tem cerca de:", opcoes:["3 metros de altura","1 metro de altura","5 metros de altura","2 metros de altura"], resposta_correta:"3 metros de altura"},
+      {titulo:"📱 Tela do celular", pergunta:"A tela de um celular mede cerca de:", opcoes:["15 centímetros","30 centímetros","10 centímetros","5 centímetros"], resposta_correta:"15 centímetros"},
+      {titulo:"🥄 Colher de chá", pergunta:"Uma colher de chá tem capacidade de:", opcoes:["5 ml","50 ml","100 ml","1 ml"], resposta_correta:"5 ml"},
+      {titulo:"🥄 Colher de sopa", pergunta:"Uma colher de sopa tem capacidade de:", opcoes:["15 ml","5 ml","50 ml","100 ml"], resposta_correta:"15 ml"},
+      {titulo:"🧊 Cubo de gelo", pergunta:"Um cubo de gelo comum pesa cerca de:", opcoes:["10 gramas","50 gramas","100 gramas","1 grama"], resposta_correta:"10 gramas"},
+      {titulo:"📖 Folha A4", pergunta:"Uma folha A4 mede:", opcoes:["21 x 29,7 cm","20 x 30 cm","25 x 35 cm","15 x 20 cm"], resposta_correta:"21 x 29,7 cm"},
+      {titulo:"✏️ Lápis", pergunta:"Um lápis comum mede cerca de:", opcoes:["19 cm","10 cm","25 cm","30 cm"], resposta_correta:"19 cm"},
+      {titulo:"🏀 Bola de basquete", pergunta:"Uma bola de basquete pesa cerca de:", opcoes:["600 gramas","1 quilo","300 gramas","2 quilos"], resposta_correta:"600 gramas"},
+      {titulo:"⚽ Bola de futebol", pergunta:"Uma bola de futebol pesa cerca de:", opcoes:["450 gramas","1 quilo","200 gramas","800 gramas"], resposta_correta:"450 gramas"},
+      {titulo:"🌡️ Febre alta", pergunta:"Uma febre alta é considerada:", opcoes:["39°C ou mais","37°C","35°C","42°C"], resposta_correta:"39°C ou mais"},
+      {titulo:"🌡️ Temperatura ambiente", pergunta:"A temperatura ambiente ideal é:", opcoes:["23°C","10°C","35°C","50°C"], resposta_correta:"23°C"},
+      {titulo:"🏊 Piscina residencial", pergunta:"Uma piscina residencial comum tem:", opcoes:["8 metros de comprimento","20 metros","50 metros","3 metros"], resposta_correta:"8 metros de comprimento"},
+      {titulo:"🚌 Ônibus escolar", pergunta:"Um ônibus escolar pesa cerca de:", opcoes:["10 toneladas","1 tonelada","5 toneladas","20 toneladas"], resposta_correta:"10 toneladas"},
+      {titulo:"🌊 Profundidade da piscina", pergunta:"A profundidade de uma piscina para crianças é:", opcoes:["1,20 metros","3 metros","50 centímetros","5 metros"], resposta_correta:"1,20 metros"},
+      {titulo:"📐 Ângulo reto", pergunta:"Um ângulo reto mede:", opcoes:["90 graus","45 graus","180 graus","360 graus"], resposta_correta:"90 graus"},
+      {titulo:"⏳ Século", pergunta:"Um século tem:", opcoes:["100 anos","50 anos","1000 anos","10 anos"], resposta_correta:"100 anos"},
+      {titulo:"📅 Década", pergunta:"Uma década tem:", opcoes:["10 anos","100 anos","5 anos","20 anos"], resposta_correta:"10 anos"},
+      {titulo:"🥶 Temperatura de congelamento", pergunta:"A temperatura de congelamento da água é:", opcoes:["0°C","-5°C","5°C","10°C"], resposta_correta:"0°C"},
+      {titulo:"🔥 Temperatura de ebulição", pergunta:"A temperatura de ebulição da água ao nível do mar é:", opcoes:["100°C","90°C","110°C","120°C"], resposta_correta:"100°C"},
+      {titulo:"🏃 Velocidade de caminhada", pergunta:"A velocidade média de caminhada é:", opcoes:["5 km/h","20 km/h","1 km/h","50 km/h"], resposta_correta:"5 km/h"},
+      {titulo:"🚴 Velocidade de bicicleta", pergunta:"A velocidade média de uma bicicleta é:", opcoes:["20 km/h","5 km/h","60 km/h","100 km/h"], resposta_correta:"20 km/h"},
+      {titulo:"📏 Altura da criança", pergunta:"A altura média de uma criança de 8 anos é:", opcoes:["1,30 metros","2 metros","80 centímetros","50 centímetros"], resposta_correta:"1,30 metros"},
+      {titulo:"⚖️ Peso da criança", pergunta:"O peso médio de uma criança de 8 anos é:", opcoes:["25 quilos","10 quilos","50 quilos","5 quilos"], resposta_correta:"25 quilos"},
+      {titulo:"🌡️ Temperatura do corpo com febre", pergunta:"Uma pessoa com febre tem temperatura:", opcoes:["Acima de 37,5°C","Abaixo de 36°C","Exatamente 36,5°C","Acima de 40°C"], resposta_correta:"Acima de 37,5°C"}
+    ],
+    tipo: "default"
+  }
+];
+// Estado do jogo
+var jogoAtual = {
+  nomeJogador: "",
+  jogoSelecionado: 0,
+  questaoAtual: 0,
+  pontuacao: 0,
+  opcaoSelecionada: null,
+  questaoRespondida: false,
+};
+
+// Função para mostrar telas
+function mostrarTela(id) {
+  var telas = document.querySelectorAll(".tela");
+  for(var i = 0; i < telas.length; i++) {
+    telas[i].classList.remove("ativa");
+    telas[i].style.display = "none";
+  }
+  document.getElementById(id).style.display = "block";
+  document.getElementById(id).classList.add("ativa");
+}
+
+// Área do professor
+function abrirAreaProfessor() {
+  mostrarTela("telaProfessor");
+  var tbody = document.getElementById("tabelaDesempenho").querySelector("tbody");
+  tbody.innerHTML = "";
+  var lista = JSON.parse(localStorage.getItem("desempenhoAlunos") || "[]");
+  for(var i = 0; i < lista.length; i++) {
+    var reg = lista[i];
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + reg.jogo + "</td><td>" + reg.nome + "</td><td>" + reg.pontos + "</td><td>" + reg.total + "</td><td>" + reg.data + "</td>";
+    tbody.appendChild(tr);
+  }
+}
+
+function limparDesempenho() {
+  if (confirm("Tem certeza que deseja apagar todos os resultados?")) {
+    localStorage.removeItem("desempenhoAlunos");
+    abrirAreaProfessor();
+  }
+}
+
+// Escolha do jogo
+function irEscolherJogo() {
+  var nome = document.getElementById("nomeJogador").value.trim();
+  if (!nome) {
+    alert("Digite seu nome para jogar!");
+    return;
+  }
+  jogoAtual.nomeJogador = nome;
+  document.getElementById("nomeNaTela").textContent = nome;
+  montarGradeJogos();
+  mostrarTela("telaEscolha");
+}
+
+function montarGradeJogos() {
+  var div = document.getElementById("gradeJogos");
+  div.innerHTML = "";
+  for(var i = 0; i < JOGOS.length; i++) {
+    var jogo = JOGOS[i];
+    var card = document.createElement("div");
+    card.className = "card-jogo";
+    card.textContent = jogo.nome + " (" + jogo.perguntas.length + " questões)";
+    card.style.borderColor = jogo.cor;
+    card.onclick = (function(idx) { return function() { iniciarJogo(idx); }; })(i);
+    div.appendChild(card);
+  }
+}
+
+function voltarInicio() {
+  mostrarTela("telaInicial");
+}
+
+function voltarMenu() {
+  montarGradeJogos();
+  mostrarTela("telaEscolha");
+}
+
+// Fluxo do jogo
+function iniciarJogo(idxJogo) {
+  jogoAtual.jogoSelecionado = idxJogo;
+  jogoAtual.questaoAtual = 0;
+  jogoAtual.pontuacao = 0;
+  jogoAtual.opcaoSelecionada = null;
+  jogoAtual.questaoRespondida = false;
+  document.getElementById("nomeJogadorJogo").textContent = jogoAtual.nomeJogador;
+  document.getElementById("pontuacaoAtual").textContent = jogoAtual.pontuacao;
+  document.getElementById("infoJogo").textContent = JOGOS[idxJogo].nome;
+  mostrarTela("telaJogo");
+  carregarQuestao();
+}
+
+function carregarQuestao() {
+  var jogo = JOGOS[jogoAtual.jogoSelecionado];
+  if (jogoAtual.questaoAtual >= jogo.perguntas.length) {
+    mostrarTela("telaFinal");
+    document.getElementById("pontuacaoFinal").textContent = jogoAtual.pontuacao;
+    document.getElementById("totalQuestoes").textContent = jogo.perguntas.length;
+    salvarDesempenhoAluno(jogo.nome, jogoAtual.nomeJogador, jogoAtual.pontuacao, jogo.perguntas.length);
+    return;
+  }
+  
+  var q = jogo.perguntas[jogoAtual.questaoAtual];
+  document.getElementById("tituloQuestao").textContent = q.titulo || "";
+  document.getElementById("textoPergunta").textContent = q.pergunta || q.question || "";
+  var opcoesDiv = document.getElementById("opcoesResposta");
+  opcoesDiv.innerHTML = "";
+  
+  if (jogo.tipo === "relogio") {
+    for(var i = 0; i < q.opcoes.length; i++) {
+      var op = q.opcoes[i];
+      var botao = document.createElement("button");
+      botao.className = "opcao rel-svg";
+      botao.innerHTML = gerarClockSVG(op.hour, op.min);
+      botao.onclick = (function(idx) { return function() { selecionarOpcao(this, idx); }; })(i);
+      opcoesDiv.appendChild(botao);
+    }
+  } else if (jogo.tipo === "ambiental" || jogo.tipo === "animais") {
+    for(var i = 0; i < q.answers.length; i++) {
+      var opcao = q.answers[i];
+      var botao = document.createElement("button");
+      botao.className = "opcao";
+      botao.textContent = opcao;
+      botao.onclick = (function(idx) { return function() { selecionarOpcao(this, idx); }; })(i);
+      opcoesDiv.appendChild(botao);
+    }
+  } else {
+    for(var i = 0; i < q.opcoes.length; i++) {
+      var opcao = q.opcoes[i];
+      var botao = document.createElement("button");
+      botao.className = "opcao";
+      botao.textContent = opcao;
+      botao.onclick = (function(idx) { return function() { selecionarOpcao(this, idx); }; })(i);
+      opcoesDiv.appendChild(botao);
+    }
+  }
+  
+  document.getElementById("contadorQuestao").textContent = "Questão " + (jogoAtual.questaoAtual + 1) + " de " + jogo.perguntas.length;
+  document.getElementById("pontuacaoAtual").textContent = jogoAtual.pontuacao;
+  document.getElementById("feedbackArea").classList.add("oculto");
+  document.getElementById("btnResponder").classList.remove("oculto");
+  document.getElementById("btnProximo").classList.add("oculto");
+  document.getElementById("btnMenu").classList.add("oculto");
+  jogoAtual.questaoRespondida = false;
+  jogoAtual.opcaoSelecionada = null;
+}
+
+function selecionarOpcao(botao, idx) {
+  if (jogoAtual.questaoRespondida) return;
+  var opcoes = document.querySelectorAll(".opcao");
+  for(var i = 0; i < opcoes.length; i++) {
+    opcoes[i].classList.remove("selecionada");
+  }
+  botao.classList.add("selecionada");
+  jogoAtual.opcaoSelecionada = idx;
+}
+
+function verificarResposta() {
+  if (jogoAtual.questaoRespondida) return;
+  if (jogoAtual.opcaoSelecionada === null) {
+    alert("Por favor, selecione uma opção!");
+    return;
+  }
+  
+  var jogo = JOGOS[jogoAtual.jogoSelecionado];
+  var q = jogo.perguntas[jogoAtual.questaoAtual];
+  jogoAtual.questaoRespondida = true;
+  var opcoes = document.querySelectorAll(".opcao");
+  
+  for(var i = 0; i < opcoes.length; i++) {
+    var b = opcoes[i];
+    b.disabled = true;
+    var correta = false;
+    
+    if (jogo.tipo === "relogio") {
+      if (i === q.resposta_correta) {
+        correta = true;
+      }
+    } else if (jogo.tipo === "ambiental" || jogo.tipo === "animais") {
+      if (i === q.correctIndex) {
+        correta = true;
+      }
+    } else {
+      correta = (b.textContent === q.resposta_correta);
+    }
+    
+    if (i === jogoAtual.opcaoSelecionada) {
+      if (correta) {
+        b.classList.add("correta");
+        jogoAtual.pontuacao++;
+        document.getElementById("pontuacaoAtual").textContent = jogoAtual.pontuacao;
+        mostrarFeedback(true);
+      } else {
+        b.classList.add("incorreta");
+        var respostaCorreta = "";
+        if (jogo.tipo === "relogio") {
+          respostaCorreta = "A imagem correta está marcada em verde!";
+        } else if (jogo.tipo === "ambiental" || jogo.tipo === "animais") {
+          respostaCorreta = q.answers[q.correctIndex];
+        } else {
+          respostaCorreta = q.resposta_correta;
+        }
+        mostrarFeedback(false, respostaCorreta);
+      }
+    } else if (correta) {
+      b.classList.add("correta");
+    }
+  }
+  
+  document.getElementById("btnResponder").classList.add("oculto");
+  document.getElementById("btnProximo").classList.remove("oculto");
+  document.getElementById("btnMenu").classList.remove("oculto");
+}
+
+function mostrarFeedback(acertou, respostaCorreta) {
+  var feedbackArea = document.getElementById("feedbackArea");
+  feedbackArea.classList.remove("oculto");
+  if (acertou) {
+    feedbackArea.className = "feedback correto";
+    feedbackArea.textContent = "🎉 Resposta correta!";
+  } else {
+    feedbackArea.className = "feedback incorreto";
+    feedbackArea.textContent = "😕 Resposta errada! " + (respostaCorreta || "");
+  }
+}
+
+function proximaQuestao() {
+  jogoAtual.questaoAtual++;
+  carregarQuestao();
+}
+
+function reiniciarJogo() {
+  location.reload();
+}
+
+function salvarDesempenhoAluno(jogoNome, nomeAluno, pontos, total) {
+  var registro = {
+    jogo: jogoNome,
+    nome: nomeAluno,
+    pontos: pontos,
+    total: total,
+    data: new Date().toLocaleString()
+  };
+  var lista = JSON.parse(localStorage.getItem("desempenhoAlunos") || "[]");
+  lista.push(registro);
+  localStorage.setItem("desempenhoAlunos", JSON.stringify(lista));
+}
+</script>
+</body>
+</html>
+
